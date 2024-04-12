@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:khada_book/view/Home/More.dart';
 import '../Home/home_page.dart';
 
 class BasicBottomNavBar extends StatefulWidget {
@@ -12,20 +13,10 @@ class _BasicBottomNavBarState extends State<BasicBottomNavBar> {
   int _selectedIndex = 0;
 
   static const List<Widget> _pages = <Widget>[
-    HomePage(), // Add your HomePage here
-    Icon(
-      Icons.monetization_on,
-      size: 150,
-      color: Colors.indigo,
-    ),
-    Icon(
-      Icons.dashboard_outlined,
-      size: 150,
-    ),
-    // Icon(
-    //   Icons.chat,
-    //   size: 150,
-    // ),
+    HomePage(), 
+   
+   More()
+  
   ];
 
   void _onItemTapped(int index) {
@@ -37,17 +28,7 @@ class _BasicBottomNavBarState extends State<BasicBottomNavBar> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-      title: Row(
-        children: [
-          Icon( Icons.book,color: Colors.white, ),
-          const Text(' hello',style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold
-              ,color: Colors.white),),
-          const Icon(Icons.keyboard_arrow_down,color: Colors.white,),
-        ],
-      ),
-      backgroundColor: Colors.indigo,
-    ),
+    
       body: Center(
         child: _pages.elementAt(_selectedIndex),
       ),
@@ -61,10 +42,7 @@ class _BasicBottomNavBarState extends State<BasicBottomNavBar> {
             icon: Icon(Icons.home_filled, ),
             label: 'HOME',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.monetization_on, ),
-            label: 'MONEY',
-          ),
+         
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard_outlined,),
             label: 'MORE',

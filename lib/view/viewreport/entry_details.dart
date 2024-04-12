@@ -1,17 +1,35 @@
+import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:screenshot/screenshot.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'edit_entry.dart';
 
 class EntryDetails extends StatefulWidget {
   String Amount;
+  String name;
+  Color color;
+  String date;
   String number;
-  EntryDetails({super.key, required this.Amount, required this.number});
+  String Customerid;
+  String docId;
+  EntryDetails(
+      {super.key,
+      required this.docId,
+      required this.date,
+      required this.Amount,
+      required this.name,
+      required this.color,
+      required this.number,
+      required this.Customerid});
 
   @override
   State<EntryDetails> createState() => _EntryDetailsState();
@@ -108,11 +126,39 @@ class _EntryDetailsState extends State<EntryDetails> {
                                                           color:
                                                               Colors.indigo))),
                                               onPressed: () {
-                                                FirebaseFirestore.instance.collection('youGave').doc('imJkAh5G4DWSKvxVGzKf').delete().then((_) {
-                                                  print('Document deleted successfully');
+                                                print(
+                                                    "${widget.Customerid}===========");
+                                                Navigator.of(context).pop();
+                                                FirebaseFirestore.instance
+                                                    .collection('Customers')
+                                                    .doc(widget.Customerid)
+                                                    .collection('youGave')
+                                                    .doc(
+                                                        'OWaRHMOgQMXruWInZMpD') // Specify the document ID to delete
+                                                    .delete()
+                                                    .then((_) {
+                                                  print(
+                                                      'Document deleted successfully');
                                                 }).catchError((error) {
-                                                  print('Error deleting document: $error');
+                                                  print(
+                                                      'Error deleting document: $error');
                                                 });
+                                                FirebaseFirestore.instance
+                                                    .collection('Customers')
+                                                    .doc(widget.Customerid)
+                                                    .collection('youGot')
+                                                    .doc(widget
+                                                        .docId) // Specify the document ID to delete
+                                                    .delete()
+                                                    .then((_) {
+                                                  print(
+                                                      'Document deleted successfully');
+                                                }).catchError((error) {
+                                                  print(
+                                                      'Error deleting document: $error');
+                                                });
+
+                                                Navigator.of(context).pop();
                                               },
                                               child: const Text("CONFIRM")),
                                         )
@@ -173,15 +219,15 @@ class _EntryDetailsState extends State<EntryDetails> {
         body: SingleChildScrollView(
           child: Column(
             children: [
-              RepaintBoundary(
-                key: _globalKey,
-                child: Container(
-                  color: Colors.indigo,
-                  height: 220,
-                  width: MediaQuery.of(context).size.width,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 20),
+              Container(
+                color: Colors.indigo,
+                height: 180,
+                width: MediaQuery.of(context).size.width,
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
+                  child: RepaintBoundary(
+                    key: _globalKey,
                     child: Container(
                       decoration: BoxDecoration(
                           color: Colors.white,
@@ -195,15 +241,22 @@ class _EntryDetailsState extends State<EntryDetails> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Row(
+                                Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     CircleAvatar(
-                                      backgroundColor: Colors.indigo,
-                                      foregroundColor: Colors.white,
-                                      child: Text("K"),
-                                    ),
-                                    SizedBox(
+                                        backgroundColor: Color(
+                                                (Random().nextDouble() *
+                                                            0xFFFFFF)
+                                                        .toInt() <<
+                                                    0)
+                                            .withOpacity(1.0),
+                                        child: Text(
+                                          '${widget.name}'.substring(0, 1),
+                                          style: const TextStyle(
+                                              color: Colors.white),
+                                        )),
+                                    const SizedBox(
                                       width: 15,
                                     ),
                                     Column(
@@ -211,12 +264,16 @@ class _EntryDetailsState extends State<EntryDetails> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          "KassimShersoft",
-                                          style: TextStyle(fontSize: 16),
+                                          widget.name,
+                                          style: const TextStyle(fontSize: 16),
                                         ),
+                                        // Text(
+                                        //   "09 Mar 24 • 01:59 PM",
+                                        //   style: TextStyle(fontSize: 11),
+                                        // ),
                                         Text(
-                                          "09 Mar 24 • 01:59 PM",
-                                          style: TextStyle(fontSize: 11),
+                                          widget.date,
+                                          style: const TextStyle(fontSize: 11),
                                         ),
                                       ],
                                     ),
@@ -226,15 +283,18 @@ class _EntryDetailsState extends State<EntryDetails> {
                                   children: [
                                     Text(
                                       "₹ ${widget.Amount}",
-                                      style: const TextStyle(
-                                          fontSize: 18, color: Colors.red),
-                                    ),
-                                    const Text(
-                                      "You gave",
                                       style: TextStyle(
-                                        fontSize: 10,
-                                      ),
-                                    )
+                                          fontSize: 18, color: widget.color),
+                                    ),
+                                    widget.color == Colors.red
+                                        ? const Text("You gave",
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                            ))
+                                        : const Text("You got",
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                            ))
                                   ],
                                 )
                               ],
@@ -242,32 +302,33 @@ class _EntryDetailsState extends State<EntryDetails> {
                             const SizedBox(
                               height: 10,
                             ),
-                            const Divider(),
-                            const Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  "Running Balanace",
-                                  style: TextStyle(fontSize: 12),
-                                ),
-                                Text(
-                                  "₹ 31",
-                                  style: TextStyle(
-                                      fontSize: 16, color: Colors.red),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 5,
-                            ),
+                            // const Divider(),
+                            // const Row(
+                            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            //   children: [
+                            //     Text(
+                            //       "Running Balanace",
+                            //       style: TextStyle(fontSize: 12),
+                            //     ),
+                            //     Text(
+                            //       "₹ 31",
+                            //       style: TextStyle(
+                            //           fontSize: 16, color: Colors.red),
+                            //     ),
+                            //   ],
+                            // ),
+
                             const Divider(),
                             const SizedBox(
-                              height: 5,
+                              height: 10,
                             ),
                             InkWell(
                               onTap: () {
                                 Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (context) => const EditEntry()));
+                                    builder: (context) => EditEntry(
+                                          amount: "${widget.Amount}",
+                                          color: widget.color,
+                                        )));
                               },
                               child: SizedBox(
                                 width: MediaQuery.of(context).size.width,
@@ -310,13 +371,13 @@ class _EntryDetailsState extends State<EntryDetails> {
                     decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(5)),
-                    child: const Column(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(
+                        const SizedBox(
                           height: 10,
                         ),
-                        Row(
+                        const Row(
                           children: [
                             Icon(Icons.message_outlined),
                             Text(
@@ -325,15 +386,14 @@ class _EntryDetailsState extends State<EntryDetails> {
                             ),
                           ],
                         ),
-                        Divider(),
-                        Text("You got :  ₹71"),
-                        Text("Balance : -(₹ 31)"),
-                        Text("Send by : 987654321"),
-                        SizedBox(
+                        const Divider(),
+                        Text("You got :  ₹ ${widget.Amount}"),
+                        Text("Send by : ${widget.number}"),
+                        const SizedBox(
                           height: 15,
                         ),
-                        Text("Details : https://khata.pe/t.PXebdfvB2"),
-                        SizedBox(
+                        const Text("Details : https://khata.pe/t.PXebdfvB2"),
+                        const SizedBox(
                           height: 15,
                         ),
                       ],
@@ -395,28 +455,24 @@ class _EntryDetailsState extends State<EntryDetails> {
         ));
   }
 
-  Future<void> _captureAndShare() async {
+  void _captureAndShare() async {
     try {
-      // Ensure the widget is fully laid out
-      WidgetsBinding.instance!.addPostFrameCallback((_) async {
-        try {
-          RenderRepaintBoundary boundary = _globalKey.currentContext!
-              .findRenderObject() as RenderRepaintBoundary;
+      RenderRepaintBoundary boundary = _globalKey.currentContext!
+          .findRenderObject() as RenderRepaintBoundary;
+      ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+      ByteData? byteData =
+          await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData != null) {
+        Uint8List pngBytes = byteData.buffer.asUint8List();
+        final tempDir = await getTemporaryDirectory();
+        final file = await File('${tempDir.path}/entry.png').create();
+        await file.writeAsBytes(pngBytes);
 
-          // Capture the image from the boundary
-          ui.Image image = await boundary.toImage(pixelRatio: 3.0);
-          ByteData? byteData =
-              await image.toByteData(format: ui.ImageByteFormat.png);
-          Uint8List? pngBytes = byteData?.buffer.asUint8List();
-          print('${pngBytes}===========');
-          // Share the image...
-          // (You can use your preferred method to share the image here)
-        } catch (e) {
-          print("Error capturing and sharing: $e");
-        }
-      });
+        await Share.shareFiles([file.path],
+            text: 'Check out this entry!', subject: 'Share Entry');
+      }
     } catch (e) {
-      print("Error capturing and sharing: $e");
+      print('Error sharing entry: $e');
     }
   }
 }

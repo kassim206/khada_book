@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class NetAmountNotifier extends ChangeNotifier {
+  
   double _netAmount = 0;
 
   double get netAmount => _netAmount;

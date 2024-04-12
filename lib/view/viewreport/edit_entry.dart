@@ -1,16 +1,32 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 class EditEntry extends StatefulWidget {
-  const EditEntry({super.key});
-
+  EditEntry({super.key, required this.amount, required this.color});
+  String amount;
+  Color color;
   @override
   State<EditEntry> createState() => _EditEntryState();
 }
 
 class _EditEntryState extends State<EditEntry> {
+  String? _pickedImagePath; // State to hold the picked image path
   DateTime? _selectedDate;
+  TextEditingController _amtController = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    _amtController.text = widget.amount;
+  }
+
+  @override
+  void dispose() {
+    _amtController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,13 +63,22 @@ class _EditEntryState extends State<EditEntry> {
         return exit;
       },
       child: Scaffold(
-
         appBar: AppBar(
-          foregroundColor: Colors.red,
-          title: const Text(
-            "You gave ₹ 75 to KassimSherSoft",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
+          foregroundColor:
+              widget.color == Colors.red ? Colors.red : Colors.green,
+          title: widget.color == Colors.red
+              ? Text(
+                  "You gave ₹ ${widget.amount} to KassimSherSoft",
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
+                )
+              : Text(
+                  "You got ₹ ${widget.amount} from KassimSherSoft",
+                  style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green),
+                ),
         ),
         body: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15.0),
@@ -72,13 +97,19 @@ class _EditEntryState extends State<EditEntry> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: TextFormField(
+                        controller: _amtController,
                         autofocus: true,
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
-                          prefixIcon: const Icon(
-                            Icons.currency_rupee_outlined,
-                            color: Colors.redAccent,
-                          ),
+                          prefixIcon: widget.color == Colors.red
+                              ? const Icon(
+                                  Icons.currency_rupee_outlined,
+                                  color: Colors.redAccent,
+                                )
+                              : const Icon(
+                                  Icons.currency_rupee_outlined,
+                                  color: Colors.green,
+                                ),
                           filled: true,
                           fillColor: Colors.white,
                           border: OutlineInputBorder(
@@ -114,17 +145,18 @@ class _EditEntryState extends State<EditEntry> {
                     const SizedBox(
                       height: 15,
                     ),
-                    const Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Text(
-                          "Add Bill No.",
-                          style: TextStyle(
-                            color: Colors.blue,
+                    if (_pickedImagePath != null)
+                      const Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text(
+                            "Add Bill No.",
+                            style: TextStyle(
+                              color: Colors.blue,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
                     const SizedBox(
                       height: 10,
                     ),
@@ -148,9 +180,11 @@ class _EditEntryState extends State<EditEntry> {
                                   horizontal: 10, vertical: 10),
                               child: Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.calendar_month_outlined,
-                                    color: Colors.red,
+                                    color: widget.color == Colors.red
+                                        ? Colors.red
+                                        : Colors.green,
                                   ),
                                   Padding(
                                       padding: const EdgeInsets.symmetric(
@@ -159,9 +193,11 @@ class _EditEntryState extends State<EditEntry> {
                                           ? DateFormat('dd MMM yy')
                                               .format(_selectedDate!)
                                           : "Select Date")),
-                                  const Icon(
+                                  Icon(
                                     Icons.arrow_drop_down,
-                                    color: Colors.red,
+                                    color: widget.color == Colors.red
+                                        ? Colors.red
+                                        : Colors.green,
                                   ),
                                 ],
                               ),
@@ -172,30 +208,58 @@ class _EditEntryState extends State<EditEntry> {
                           onTap: () {
                             _showImagePicker(context);
                           },
-                          child: Card(
+                          child: Card( color: Colors.white,
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8)),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                                color: Colors.white,
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 10),
-                              child: const Row(
-                                children: [
-                                  Icon(
-                                    Icons.camera_alt_outlined,
-                                    color: Colors.red,
+                            child: _pickedImagePath != null
+                                ? Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Container(
+                                        color: Colors.white,
+                                        margin: const EdgeInsets.symmetric(
+                                            horizontal: 20, vertical: 10),
+                                        child: Image.file(
+                                          File(_pickedImagePath!),
+                                          height: 20,
+                                          width: 20,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                      Icon(
+                                        Icons.camera_alt_outlined,
+                                        color: widget.color == Colors.red
+                                            ? Colors.red
+                                            : Colors.green,
+                                      ),
+                                      const SizedBox(
+                                        width: 10,
+                                      )
+                                    ],
+                                  )
+                                : Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(8),
+                                      color: Colors.white,
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 10),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.camera_alt_outlined,
+                                          color: widget.color == Colors.red
+                                              ? Colors.red
+                                              : Colors.green,
+                                        ),
+                                        const Padding(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 8.0),
+                                          child: Text("Attach bills"),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                  Padding(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 8.0),
-                                    child: Text("Attach bills"),
-                                  ),
-                                ],
-                              ),
-                            ),
                           ),
                         ),
                       ],
@@ -212,7 +276,9 @@ class _EditEntryState extends State<EditEntry> {
                           ),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(5)),
-                          backgroundColor: Colors.pink,
+                          backgroundColor: widget.color == Colors.red
+                              ? Colors.pink
+                              : Colors.green,
                           foregroundColor: Colors.white),
                       child: const Text(
                         "SAVE",
@@ -248,7 +314,7 @@ class _EditEntryState extends State<EditEntry> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       context: context,
       builder: (BuildContext context) {
-        return Container(
+        return SizedBox(
           height: 200,
           child: Column(
             children: [
@@ -307,7 +373,10 @@ class _EditEntryState extends State<EditEntry> {
     final pickedImage = await picker.pickImage(source: source);
     // Handle picked image
     if (pickedImage != null) {
-      // You can do something with the picked image here
+      // Update the state with the picked image path
+      setState(() {
+        _pickedImagePath = pickedImage.path;
+      });
       print('Image picked: ${pickedImage.path}');
     }
   }

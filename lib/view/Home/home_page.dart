@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_scrolling_fab_animated/flutter_scrolling_fab_animated.dart';
 import 'package:contacts_service/contacts_service.dart';
 import 'package:intl/intl.dart';
+import 'package:khada_book/view/Home/cashbook.dart';
 import 'package:khada_book/view/Home/transaction.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:khada_book/view/Home/transaction.dart' as MyTransaction;
@@ -37,6 +38,17 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        appBar: AppBar(
+      title: const Row(
+        children: [
+          Icon( Icons.book,color: Colors.white, ),
+          Text(' My Buisiness',style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold
+              ,color: Colors.white),),
+          Icon(Icons.keyboard_arrow_down,color: Colors.white,),
+        ],
+      ),
+      backgroundColor: Colors.indigo,
+    ),
       backgroundColor: Colors.white,
       floatingActionButton: ScrollingFabAnimated(
         color: Colors.indigo,
@@ -125,7 +137,7 @@ class _HomePageState extends State<HomePage> {
                     const Divider(),
                     InkWell(
                       onTap: (){
-                        Navigator.push(context, MaterialPageRoute(builder: (context)=>ViewReport()));
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=>const ViewReport()));
                       },
                       child: const Text(
                         "View Report >",
@@ -160,7 +172,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 child: InkWell(
                   onTap: () {
-                    // Add your onTap logic here
+                   Navigator.of(context).push(MaterialPageRoute(builder: ((context) => Cashbook())));
                   },
                   child: Container(
                     margin: const EdgeInsets.symmetric(vertical: 5),
@@ -265,7 +277,7 @@ class _HomePageState extends State<HomePage> {
                 builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
 
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return CircularProgressIndicator(); // Show loading indicator while data is being fetched
+                    return const CircularProgressIndicator(); // Show loading indicator while data is being fetched
                   }
 
                   if (snapshot.hasError) {
@@ -324,17 +336,57 @@ class _HomePageState extends State<HomePage> {
                                   child: selectedContact?['avatar'] == null
                                       ? Text(
                                     selectedContact?['userName']?[0] ?? '', // Display first letter of the user's name
-                                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold,color: Colors.white),
+                                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold,color: Colors.white),
                                   )
                                       : null, // No child if avatar image is available
                                 ),
-                                trailing: const Text(
-                                  "₹ 10",
-                                  style: TextStyle(
-                                      fontSize: 13, color: Colors.green),
-                                ),
+                                
+                                // trailing: const Text(
+                                //   "₹ 10",
+                                //   style: TextStyle(
+                                //       fontSize: 13, color: Colors.green),
+                                // ),
+                                trailing: StreamBuilder<DocumentSnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('Customers')
+                          .doc(customerId)
+                          .snapshots(),
+                      builder: (BuildContext context,
+                          AsyncSnapshot<DocumentSnapshot> snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const CircularProgressIndicator();
+                        }
+                        if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        }
+
+                        // Get the customer document data
+                        var customerData =
+                            snapshot.data!.data() as Map<String, dynamic>?;
+
+                        // Check if the document exists and contains the netAmount
+                        if (customerData != null &&
+                            customerData.containsKey('netAmount')) {
+                          double netAmount = customerData['netAmount'];
+                          return netAmount == 0.0
+                                ? const Text("0")
+                                : netAmount < 0.0
+                                    ?   Text('${netAmount < 0 ? '' : ''} ₹ ${netAmount.abs().toInt()}',
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold,color: Colors.red),
+                                      )
+                                    :  Text('₹ ${netAmount.toInt()}',
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold,color: Colors.green),
+                                      );
+                        } else {
+                          return const Text('Net Amount: N/A');
+                        }
+                      },
+                    ),
                                 title: Text(selectedContact?['userName'] ?? ""),
-                                subtitle:   Text(formattedCreateDate,style: TextStyle(fontSize: 10,color: Colors.grey),),
+                                subtitle:   Text(formattedCreateDate,style: const TextStyle(fontSize: 10,color: Colors.grey),),
                               ),
                             ),
                           ),
@@ -388,16 +440,16 @@ class _HomePageState extends State<HomePage> {
 
                 return Scaffold(
                   appBar: AppBar(
-                    title: Text('Select a contact'),
+                    title: const Text('Select a contact'),
                   ),
                   body: Column(
                     children: [
                       Padding(
-                        padding: EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.all(8.0),
                         child: TextField(
                           controller: searchController,
                           onChanged: filterContacts,
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             labelText: 'Search',
                             prefixIcon: Icon(Icons.search),
                           ),
@@ -418,16 +470,16 @@ class _HomePageState extends State<HomePage> {
                               contact.displayName != null && contact.displayName!.isNotEmpty
                               ? contact.displayName![0].toUpperCase()
                                   : '',
-                              style: TextStyle(color: Colors.white),
+                              style: const TextStyle(color: Colors.white),
                               )
                                   : null,
                               ),
 
 
                                 title: Text(contact.displayName ?? '',
-                                    style: TextStyle(fontSize: 13)),
+                                    style: const TextStyle(fontSize: 13)),
                                 subtitle: Text(_getPhoneNumber(contact),
-                                    style: TextStyle(fontSize: 8)),
+                                    style: const TextStyle(fontSize: 8)),
                                 trailing: ElevatedButton(
                                   style: ElevatedButton.styleFrom(
                                     foregroundColor: Colors.white,
@@ -440,7 +492,7 @@ class _HomePageState extends State<HomePage> {
                                     Navigator.of(context).pop();
                                     _addContact(contact);
                                   },
-                                  child: Text("Add"),
+                                  child: const Text("Add"),
                                 ),
                               );
                             }).toList(),
@@ -532,17 +584,17 @@ class _HomePageState extends State<HomePage> {
 
       // Show a success message
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Contact added to Firestore'),
-          duration: const Duration(seconds: 2),
+          duration: Duration(seconds: 2),
         ),
       );
     } catch (e) {
       // Show an error message if adding to Firestore fails
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+        const SnackBar(
           content: Text('Failed to add contact to Firestore'),
-          duration: const Duration(seconds: 2),
+          duration: Duration(seconds: 2),
         ),
       );
     }

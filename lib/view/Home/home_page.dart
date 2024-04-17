@@ -3,402 +3,621 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_scrolling_fab_animated/flutter_scrolling_fab_animated.dart';
 import 'package:contacts_service/contacts_service.dart';
 import 'package:intl/intl.dart';
 import 'package:khada_book/view/Home/cashbook.dart';
-import 'package:khada_book/view/Home/transaction.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:khada_book/view/Home/transaction.dart' as MyTransaction;
-import 'package:timeago/timeago.dart' as timeago;
+import 'package:khada_book/view/Home/transaction2.dart';
+// import 'package:timeago/timeago.dart' as timeago;
 
 import '../../model/user_model.dart';
 import '../viewreport/view_report.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
-
+  HomePage({super.key, required this.uid});
+  String uid;
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
+  late ScaffoldMessengerState _scaffoldMessengerState;
   ScrollController _scrollController = ScrollController();
   List<Contact> filteredContacts = [];
   // List<Contact> selectedContacts = []; // List to store selected contacts
   String? relativeTime;
-  String ?docId;
+  String? docId;
   @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
   }
 
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
+      // Initialize _scaffoldMessengerState after the first frame has been built
+      _scaffoldMessengerState = ScaffoldMessenger.of(context);
+    });
+    print('${widget.uid}/*/*****/');
+  }
+
+  void _showSuccessMessage() {
+    if (_scaffoldMessengerState != null) {
+      _scaffoldMessengerState.showSnackBar(
+        const SnackBar(
+          content: Text('Contact added to Firestore'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  // void _showErrorMessage() {
+  //   if (_scaffoldMessengerState != null) {
+  //     _scaffoldMessengerState.showSnackBar(
+  //       const SnackBar(
+  //         content: Text('Failed to add contact to Firestore'),
+  //         duration: Duration(seconds: 2),
+  //       ),
+  //     );
+  //   }
+  // }
+
+  void _addContact(Contact contact, String userId, BuildContext context) async {
+    try {
+      // Create a new CustomersModel instance
+      CustomersModel customer = CustomersModel(
+        userName: contact.displayName,
+        createDate: DateTime.now(),
+        contactNumber: _getPhoneNumber(contact),
+      );
+
+      // Convert CustomersModel to JSON
+      Map<String, dynamic> customerData = customer.toJson();
+
+      // Reference to the specific user document in Users collection
+      DocumentReference userDocRef =
+          FirebaseFirestore.instance.collection('users').doc(userId);
+
+      // Add the customer data as a subcollection under the user document
+      await userDocRef.collection('Customers').add(customerData);
+
+      // Show a success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Contact added to Firestore'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
+      // _showErrorMessage();
+      // Show an error message if adding to Firestore fails
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(
+      //     content: Text(''),
+      //     duration: Duration(seconds: 2),
+      //   ),
+      // );
+    }
+  }
+
+  final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey =
+      GlobalKey<ScaffoldMessengerState>();
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-      title: const Row(
-        children: [
-          Icon( Icons.book,color: Colors.white, ),
-          Text(' My Buisiness',style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold
-              ,color: Colors.white),),
-          Icon(Icons.keyboard_arrow_down,color: Colors.white,),
-        ],
-      ),
-      backgroundColor: Colors.indigo,
-    ),
-      backgroundColor: Colors.white,
-      floatingActionButton: ScrollingFabAnimated(
-        color: Colors.indigo,
-        width: 140,
-        height: 50,
-        icon: const Icon(
-          Icons.person_add,
-          color: Colors.white,
-          size: 20,
-        ),
-        text: const Text(
-          'Add Customer',
-          style: TextStyle(color: Colors.white, fontSize: 10.0),
-        ),
-        onPress: () {
-          _openContacts();
-        },
-        scrollController: _scrollController,
-        animateIcon: true,
-        inverted: false,
-        radius: 10.0,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: SingleChildScrollView(
-          controller: _scrollController,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // const SizedBox(
-              //   height: 50,
-              // ),
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
+    return ScaffoldMessenger(
+      key: _scaffoldMessengerKey,
+      child: WillPopScope(onWillPop:_onWillPop,
+        child: Scaffold(
+          appBar: AppBar(
+            automaticallyImplyLeading: false,
+            title: const Row(
+              children: [
+                Icon(
+                  Icons.book,
                   color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      spreadRadius: 2,
-                      blurRadius: 4,
-                      offset: const Offset(0, 2), // changes position of shadow
-                    ),
-                  ],
                 ),
-                child: Column(
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(top: 20),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          Column(
-                            children: [
-                              Text(
-                                "You Will give",
-                                style: TextStyle(fontSize: 12),
-                              ),
-                              Text(
-                                "₹ 368",
-                                style: TextStyle(
-                                    color: Colors.green,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16),
-                              )
-                            ],
-                          ),
-                          Column(
-                            children: [
-                              Text(
-                                "You Will get",
-                                style: TextStyle(fontSize: 12),
-                              ),
-                              Text(
-                                "₹ 20",
-                                style: TextStyle(
-                                    color: Colors.redAccent,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16),
-                              )
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Divider(),
-                    InkWell(
-                      onTap: (){
-                        Navigator.push(context, MaterialPageRoute(builder: (context)=>const ViewReport()));
-                      },
-                      child: const Text(
-                        "View Report >",
-                        style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.indigo,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 5,
-                    ),
-                  ],
+                Text(
+                  ' My Buisiness',
+                  style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
                 ),
-              ),
-
-              const SizedBox(
-                height: 5,
-              ),
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      spreadRadius: 2,
-                      blurRadius: 4,
-                      offset: const Offset(0, 2), // changes position of shadow
-                    ),
-                  ],
-                ),
-                child: InkWell(
-                  onTap: () {
-                   Navigator.of(context).push(MaterialPageRoute(builder: ((context) => Cashbook())));
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 5),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.library_books,
-                          color: Colors.indigo,
+                // Icon(
+                //   Icons.keyboard_arrow_down,
+                //   color: Colors.white,
+                // ),
+              ],
+            ),
+            backgroundColor: Colors.indigo,
+          ),
+          backgroundColor: Colors.white,
+          floatingActionButton: ScrollingFabAnimated(
+            color: Colors.indigo,
+            width: 140,
+            height: 50,
+            icon: const Icon(
+              Icons.person_add,
+              color: Colors.white,
+              size: 20,
+            ),
+            text: const Text(
+              'Add Customer',
+              style: TextStyle(color: Colors.white, fontSize: 10.0),
+            ),
+            onPress: () {
+              _openContacts();
+            },
+            scrollController: _scrollController,
+            animateIcon: true,
+            inverted: false,
+            radius: 10.0,
+          ),
+          body: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // const SizedBox(
+                  //   height: 50,
+                  // ),
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          spreadRadius: 2,
+                          blurRadius: 4,
+                          offset:
+                              const Offset(0, 2), // changes position of shadow
                         ),
-                        Text(
-                          "   OPEN CASHBOOK",
-                          style: TextStyle(
-                              color: Colors.indigo,
-                              fontWeight: FontWeight.bold),
-                        )
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.only(top: 20),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Column(
+                                children: [
+                                  const Text(
+                                    "You Will give",
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                  StreamBuilder<QuerySnapshot>(
+                                    stream: FirebaseFirestore.instance
+                                        .collection('users')
+                                        .doc('${widget.uid}')
+                                        .collection('Customers')
+                                        .orderBy("createDate", descending: true)
+                                        .snapshots(),
+                                    builder: (BuildContext context,
+                                        AsyncSnapshot<QuerySnapshot> snapshot) {
+                                      if (snapshot.connectionState ==
+                                          ConnectionState.waiting) {
+                                        return const CircularProgressIndicator();
+                                      }
+                                      if (snapshot.hasError) {
+                                        return Text('Error: ${snapshot.error}');
+                                      }
+        
+                                      // Calculate total net amount for all customers
+                                      int totalNetAmount = 0;
+        
+                                      // Iterate through each document in the snapshot
+                                      for (DocumentSnapshot customerSnapshot
+                                          in snapshot.data!.docs) {
+                                        // Get the customer document data
+                                        var customerData = customerSnapshot.data()
+                                            as Map<String, dynamic>;
+        
+                                        // Check if the document contains the netAmount
+                                        if (customerData
+                                            .containsKey('netAmount')) {
+                                          int netAmount =
+                                              customerData['netAmount'];
+                                          print('${netAmount}');
+        
+                                          // Add the net amount to the total
+                                          if (netAmount < 0) {
+                                            totalNetAmount += netAmount;
+                                          }
+                                        }
+                                      }
+        
+                                      // Display the total net amount
+                                      return totalNetAmount == 0
+                                          ? const Text("₹ 0")
+                                          : totalNetAmount < 0
+                                              ? Text(
+                                                  '₹ ${totalNetAmount.abs()}',
+                                                  style: const TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.green),
+                                                )
+                                              : Text(
+                                                  '₹ ${totalNetAmount}',
+                                                  style: const TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.red),
+                                                );
+                                    },
+                                  ),
+                                ],
+                              ),
+                              Column(
+                                children: [
+                                  const Text(
+                                    "You Will get",
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                  StreamBuilder<QuerySnapshot>(
+                                    stream: FirebaseFirestore.instance
+                                        .collection('users')
+                                        .doc('${widget.uid}')
+                                        .collection('Customers')
+                                        .orderBy("createDate", descending: true)
+                                        .snapshots(),
+                                    builder: (BuildContext context,
+                                        AsyncSnapshot<QuerySnapshot> snapshot) {
+                                      if (snapshot.connectionState ==
+                                          ConnectionState.waiting) {
+                                        return const CircularProgressIndicator();
+                                      }
+                                      if (snapshot.hasError) {
+                                        return Text('Error: ${snapshot.error}');
+                                      }
+        
+                                      // Calculate total net amount for all customers
+                                      int totalNetAmount = 0;
+        
+                                      // Iterate through each document in the snapshot
+                                      for (DocumentSnapshot customerSnapshot
+                                          in snapshot.data!.docs) {
+                                        // Get the customer document data
+                                        var customerData = customerSnapshot.data()
+                                            as Map<String, dynamic>;
+        
+                                        // Check if the document contains the netAmount
+                                        if (customerData
+                                            .containsKey('netAmount')) {
+                                          int netAmount =
+                                              customerData['netAmount'];
+                                          print('${netAmount}');
+        
+                                          // Add the net amount to the total
+                                          if (netAmount > 0) {
+                                            totalNetAmount += netAmount;
+                                          }
+                                        }
+                                      }
+        
+                                      // Display the total net amount
+                                      return totalNetAmount == 0
+                                          ? const Text("₹ 0")
+                                          : totalNetAmount < 0
+                                              ? Text(
+                                                  '₹ ${totalNetAmount.abs()}',
+                                                  style: const TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.green),
+                                                )
+                                              : Text(
+                                                  '₹ ${totalNetAmount}',
+                                                  style: const TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      color: Colors.red),
+                                                );
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Divider(),
+                        InkWell(
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => ViewReport(
+                                          userId: widget.uid,
+                                        )));
+                          },
+                          child: const Text(
+                            "View Report >",
+                            style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.indigo,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 5,
+                        ),
                       ],
                     ),
                   ),
-                ),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.white, // Set the background color to white
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.2),
-                      spreadRadius: 2,
-                      blurRadius: 3,
-                      offset: const Offset(0, 1), // changes position of shadow
+        
+                  const SizedBox(
+                    height: 5,
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          spreadRadius: 2,
+                          blurRadius: 4,
+                          offset:
+                              const Offset(0, 2), // changes position of shadow
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: CupertinoSearchTextField(
-                  backgroundColor: Colors.white.withOpacity(0.4),
-                  prefixIcon: const Icon(
-                    CupertinoIcons.search,
-                    color: Colors.grey,
-                  ),
-                  style: const TextStyle(color: Colors.black),
-                  suffixIcon: const Icon(
-                    CupertinoIcons.xmark_circle_fill,
-                    color: Colors.grey,
-                  ),
-                ),
-              ),
-
-              // ListView.builder(
-              //     padding: const EdgeInsets.all(0),
-              //     shrinkWrap: true,
-              //     controller: ScrollController(),
-              //     itemCount: selectedContacts.length,
-              //     itemBuilder: (BuildContext context, index) {
-              //       return Column(
-              //         children: [
-              //           const SizedBox(
-              //             height: 10,
-              //           ),
-              //           Container(
-              //             child: Card(
-              //               child: ListTile(
-              //                 onTap: () {
-              //                   Navigator.of(context).push(
-              //                     MaterialPageRoute(
-              //                       builder: (context) => MyTransaction.Transaction(
-              //                         name: selectedContacts[index].displayName ?? "",
-              //                         number: _getPhoneNumber(selectedContacts[index]),
-              //                       ),
-              //                     ),
-              //                   );
-              //                 },
-              //                 tileColor: Colors.white,
-              //                 leading: const CircleAvatar(
-              //                   backgroundColor: Colors.blue,
-              //                   backgroundImage: NetworkImage(
-              //                       'https://pics.craiyon.com/2023-07-15/dc2ec5a571974417a5551420a4fb0587.webp'),
-              //                 ),
-              //                 trailing: const Text(
-              //                   "₹ 10",
-              //                   style: TextStyle(
-              //                       fontSize: 13, color: Colors.green),
-              //                 ),
-              //                 title: Text(
-              //                     "${selectedContacts[index].displayName}" ??
-              //                         ''),
-              //                 subtitle: Text(
-              //                   "${relativeTime}",
-              //                   style: const TextStyle(fontSize: 10),
-              //                 ),
-              //               ),
-              //             ),
-              //           ),
-              //         ],
-              //       );
-              //     }),
-              StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance.collection('Customers').orderBy("createDate", descending :true).snapshots(),
-                builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator(); // Show loading indicator while data is being fetched
-                  }
-
-                  if (snapshot.hasError) {
-                    return Text('Error: ${snapshot.error}');
-                  }
-
-                  // Extract documents from snapshot
-                  var documents = snapshot.data!.docs;
-
-                  return
-                  ListView.builder(
-                    controller: ScrollController(),
-                    padding: const EdgeInsets.all(0),
-                    shrinkWrap: true,
-                    itemCount: documents.length,
-                    itemBuilder: (BuildContext context, index) {
-                      print('${documents[index].id}');
-                      var selectedContact = documents[index].data() as Map<String, dynamic>?; // Get data for the current document
-                      String customerId = documents[index].id;
-                      DateTime? createDate = selectedContact?['createDate'] != null
-                          ? (selectedContact?['createDate'] as Timestamp).toDate()
-                          : null;
-
-                      // Formatting the DateTime object to a string in the desired format
-                      String formattedCreateDate = createDate != null
-                          ? DateFormat('dd/MM/yy HH:mm').format(createDate)
-                          : '';
-
-                      return Column(
-                        children: [
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          Container(
-                            child: Card(
-                              child: ListTile(
-                                onTap: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) => MyTransaction.Transaction(
-                                        customerId: customerId,
-                                        name:selectedContact?['userName'] ?? "" ?? "",
-                                        number:selectedContact?['contactNumber'] ?? "" ?? "", // Casting to Contact type
-                                      ),
-                                    ),
-                                  );
-                                },
-                                tileColor: Colors.white,
-                                leading: CircleAvatar(
-                                  backgroundImage: selectedContact?['avatar'] != null
-                                      ? NetworkImage(selectedContact?['avatar'] ?? '') // Load avatar image if available
-                                      : null, // No background image if avatar is not available
-                                  backgroundColor: selectedContact?['avatar'] == null
-                                      ? Color((Random().nextDouble() * 0xFFFFFF).toInt() << 0).withOpacity(1.0) // Generate a random color if avatar is not available
-                                      : null, // No background color if avatar image is available
-                                  child: selectedContact?['avatar'] == null
-                                      ? Text(
-                                    selectedContact?['userName']?[0] ?? '', // Display first letter of the user's name
-                                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold,color: Colors.white),
-                                  )
-                                      : null, // No child if avatar image is available
-                                ),
-                                
-                                // trailing: const Text(
-                                //   "₹ 10",
-                                //   style: TextStyle(
-                                //       fontSize: 13, color: Colors.green),
-                                // ),
-                                trailing: StreamBuilder<DocumentSnapshot>(
-                      stream: FirebaseFirestore.instance
-                          .collection('Customers')
-                          .doc(customerId)
-                          .snapshots(),
-                      builder: (BuildContext context,
-                          AsyncSnapshot<DocumentSnapshot> snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const CircularProgressIndicator();
-                        }
-                        if (snapshot.hasError) {
-                          return Text('Error: ${snapshot.error}');
-                        }
-
-                        // Get the customer document data
-                        var customerData =
-                            snapshot.data!.data() as Map<String, dynamic>?;
-
-                        // Check if the document exists and contains the netAmount
-                        if (customerData != null &&
-                            customerData.containsKey('netAmount')) {
-                          double netAmount = customerData['netAmount'];
-                          return netAmount == 0.0
-                                ? const Text("0")
-                                : netAmount < 0.0
-                                    ?   Text('${netAmount < 0 ? '' : ''} ₹ ${netAmount.abs().toInt()}',
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold,color: Colors.red),
-                                      )
-                                    :  Text('₹ ${netAmount.toInt()}',
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold,color: Colors.green),
-                                      );
-                        } else {
-                          return const Text('Net Amount: N/A');
-                        }
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: ((context) => Cashbook(
+                                  customerId: '',
+                                  userId: widget.uid,
+                                ))));
                       },
-                    ),
-                                title: Text(selectedContact?['userName'] ?? ""),
-                                subtitle:   Text(formattedCreateDate,style: const TextStyle(fontSize: 10,color: Colors.grey),),
-                              ),
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(vertical: 5),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.library_books,
+                              color: Colors.indigo,
                             ),
-                          ),
-                        ],
+                            Text(
+                              "   OPEN CASHBOOK",
+                              style: TextStyle(
+                                  color: Colors.indigo,
+                                  fontWeight: FontWeight.bold),
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.white, // Set the background color to white
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.2),
+                          spreadRadius: 2,
+                          blurRadius: 3,
+                          offset:
+                              const Offset(0, 1), // changes position of shadow
+                        ),
+                      ],
+                    ),
+                    child: CupertinoSearchTextField(
+                      backgroundColor: Colors.white.withOpacity(0.4),
+                      prefixIcon: const Icon(
+                        CupertinoIcons.search,
+                        color: Colors.grey,
+                      ),
+                      style: const TextStyle(color: Colors.black),
+                      suffixIcon: const Icon(
+                        CupertinoIcons.xmark_circle_fill,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                  StreamBuilder<QuerySnapshot>(
+                    // stream: FirebaseFirestore.instance
+                    //     .collection('Customers')
+                    //     .orderBy("createDate", descending: true)
+                    //     .snapshots(),
+                    stream: FirebaseFirestore.instance
+                        .collection('users') // Main collection 'Users'
+                        .doc('${widget.uid}') // Specify the user's document ID
+                        .collection(
+                            'Customers') // Subcollection 'Customers' under the user
+                        .orderBy("createDate",
+                            descending: true) // Order by 'createDate' field
+                        .snapshots(),
+                    builder: (BuildContext context,
+                        AsyncSnapshot<QuerySnapshot> snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const CircularProgressIndicator(); // Show loading indicator while data is being fetched
+                      }
+        
+                      if (snapshot.hasError) {
+                        return Text('Error: ${snapshot.error}');
+                      }
+        
+                      // Extract documents from snapshot
+                      var documents = snapshot.data!.docs;
+        
+                      return ListView.builder(
+                        controller: ScrollController(),
+                        padding: const EdgeInsets.all(0),
+                        shrinkWrap: true,
+                        itemCount: documents.length,
+                        itemBuilder: (BuildContext context, index) {
+                          print('${documents[index].id}');
+                          var selectedContact = documents[index].data() as Map<
+                              String,
+                              dynamic>?; // Get data for the current document
+                          String customerId = documents[index].id;
+                          DateTime? createDate =
+                              selectedContact?['createDate'] != null
+                                  ? (selectedContact?['createDate'] as Timestamp)
+                                      .toDate()
+                                  : null;
+        
+                          // Formatting the DateTime object to a string in the desired format
+                          String formattedCreateDate = createDate != null
+                              ? DateFormat('dd/MM/yy HH:mm').format(createDate)
+                              : '';
+        
+                          return Column(
+                            children: [
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              Container(
+                                child: Card(
+                                  child: ListTile(
+                                    onLongPress: () {
+                                      FirebaseFirestore.instance
+                                          .collection('users')
+                                          .doc(widget.uid)
+                                          .collection('Customers')
+                                          .doc(customerId)
+                                          .delete()
+                                          .then((_) {
+                                        print("Document successfully deleted!");
+                                      }).catchError((error) {
+                                        print("Error deleting document: $error");
+                                      });
+                                    },
+                                    onTap: () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (context) => Transactions(
+                                            userId: widget.uid,
+                                            customerId: customerId,
+                                            name: selectedContact?['userName'] ??
+                                                "" ??
+                                                "",
+                                            number: selectedContact?[
+                                                    'contactNumber'] ??
+                                                "" ??
+                                                "", // Casting to Contact type
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    tileColor: Colors.white,
+                                    leading: CircleAvatar(
+                                      backgroundImage: selectedContact?[
+                                                  'avatar'] !=
+                                              null
+                                          ? NetworkImage(selectedContact?[
+                                                  'avatar'] ??
+                                              '') // Load avatar image if available
+                                          : null, // No background image if avatar is not available
+                                      backgroundColor: selectedContact?[
+                                                  'avatar'] ==
+                                              null
+                                          ? Color((Random().nextDouble() *
+                                                          0xFFFFFF)
+                                                      .toInt() <<
+                                                  0)
+                                              .withOpacity(
+                                                  1.0) // Generate a random color if avatar is not available
+                                          : null, // No background color if avatar image is available
+                                      child: selectedContact?['avatar'] == null
+                                          ? Text(
+                                              selectedContact?['userName']?[0] ??
+                                                  '', // Display first letter of the user's name
+                                              style: const TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white),
+                                            )
+                                          : null, // No child if avatar image is available
+                                    ),
+        
+                                    // trailing: const Text(
+                                    //   "₹ 10",
+                                    //   style: TextStyle(
+                                    //       fontSize: 13, color: Colors.green),
+                                    // ),
+                                    trailing:
+                                     StreamBuilder<DocumentSnapshot>(
+                                      stream: FirebaseFirestore.instance
+                                          .collection('users')
+                                          .doc(widget.uid)
+                                          .collection('Customers')
+                                          .doc(customerId)
+                                          .snapshots(),
+                                      builder: (BuildContext context,
+                                          AsyncSnapshot<DocumentSnapshot>
+                                              snapshot) {
+                                        if (snapshot.connectionState ==
+                                            ConnectionState.waiting) {
+                                          return const CircularProgressIndicator();
+                                        }
+                                        if (snapshot.hasError) {
+                                          return Text('Error: ${snapshot.error}');
+                                        }
+        
+                                        // Get the customer document data
+                                        var customerData = snapshot.data!.data()
+                                            as Map<String, dynamic>?;
+        
+                                        // Check if the document exists and contains the netAmount
+                                        if (customerData != null &&
+                                            customerData
+                                                .containsKey('netAmount')) {
+                                          int netAmount =
+                                              customerData['netAmount'];
+                                          print('${netAmount}');
+                                          return netAmount == 0
+                                              ? const Text("0")
+                                              : netAmount < 0
+                                                  ? Text(
+                                                      '${netAmount < 0 ? '' : ''} ₹ ${netAmount.abs()}',
+                                                      style: const TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Colors.green),
+                                                    )
+                                                  : Text(
+                                                      '₹ ${netAmount}',
+                                                      style: const TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Colors.red),
+                                                    );
+                                        } else {
+                                          return const Text('Net Amount: N/A');
+                                        }
+                                      },
+                                    ),
+                                    title:
+                                        Text(selectedContact?['userName'] ?? ""),
+                                    subtitle: Text(
+                                      formattedCreateDate,
+                                      style: const TextStyle(
+                                          fontSize: 10, color: Colors.grey),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
                       );
                     },
-                  );
-                },
+                  ),
+                ],
               ),
-
-
-            ],
+            ),
           ),
         ),
       ),
@@ -461,21 +680,25 @@ class _HomePageState extends State<HomePage> {
                             children: filteredContacts.map((contact) {
                               return ListTile(
                                 leading: CircleAvatar(
-                              backgroundColor: contact.avatar != null && contact.avatar!.isNotEmpty
-                              ? null // No need for background color if avatar image is available
-                                  : _generateRandomColor(), // Generate random color if avatar image is not available
+                                  backgroundColor: contact.avatar != null &&
+                                          contact.avatar!.isNotEmpty
+                                      ? null // No need for background color if avatar image is available
+                                      : _generateRandomColor(), // Generate random color if avatar image is not available
 
-                              child: contact.avatar == null || contact.avatar!.isEmpty
-                              ? Text(
-                              contact.displayName != null && contact.displayName!.isNotEmpty
-                              ? contact.displayName![0].toUpperCase()
-                                  : '',
-                              style: const TextStyle(color: Colors.white),
-                              )
-                                  : null,
-                              ),
-
-
+                                  child: contact.avatar == null ||
+                                          contact.avatar!.isEmpty
+                                      ? Text(
+                                          contact.displayName != null &&
+                                                  contact
+                                                      .displayName!.isNotEmpty
+                                              ? contact.displayName![0]
+                                                  .toUpperCase()
+                                              : '',
+                                          style: const TextStyle(
+                                              color: Colors.white),
+                                        )
+                                      : null,
+                                ),
                                 title: Text(contact.displayName ?? '',
                                     style: const TextStyle(fontSize: 13)),
                                 subtitle: Text(_getPhoneNumber(contact),
@@ -490,7 +713,8 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                   onPressed: () {
                                     Navigator.of(context).pop();
-                                    _addContact(contact);
+                                    _addContact(
+                                        contact, '${widget.uid}', context);
                                   },
                                   child: const Text("Add"),
                                 ),
@@ -559,48 +783,67 @@ class _HomePageState extends State<HomePage> {
   //     ),
   //   );
   // }
-  void _addContact(Contact contact) async {
-
-    CustomersModel customer = CustomersModel(
-      userName: contact.displayName,
-      createDate: DateTime.now(), contactNumber:_getPhoneNumber(contact),
-    );
-
-    Map<String, dynamic> customerData = customer.toJson();
-
-    DocumentReference docRef = await FirebaseFirestore.instance.collection('Customers').add(customerData);
-
-    // Create a new CustomersModel instance
-
-    // Convert CustomersModel to JSON
-
-    try {
-
-      // Add the customer data to the "Customers" collection in Firestore
-      CustomersModel customer = CustomersModel(
-        userName: contact.displayName,
-        createDate: DateTime.now(), contactNumber:_getPhoneNumber(contact),
-      );
-
-      // Show a success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Contact added to Firestore'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    } catch (e) {
-      // Show an error message if adding to Firestore fails
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to add contact to Firestore'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    }
+  // void _addContact(Contact contact, String userId, BuildContext context) async {
+  //   try {
+  //     // Create a new CustomersModel instance
+  //     CustomersModel customer = CustomersModel(
+  //       userName: contact.displayName,
+  //       createDate: DateTime.now(),
+  //       contactNumber: _getPhoneNumber(contact),
+  //     );
+  //
+  //     // Convert CustomersModel to JSON
+  //     Map<String, dynamic> customerData = customer.toJson();
+  //
+  //     // Reference to the specific user document in Users collection
+  //     DocumentReference userDocRef =
+  //         FirebaseFirestore.instance.collection('users').doc(userId);
+  //
+  //     // Add the customer data as a subcollection under the user document
+  //     await userDocRef.collection('Customers').add(customerData);
+  //
+  //     // Show a success message
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //         content: Text('Contact added to Firestore'),
+  //         duration: Duration(seconds: 2),
+  //       ),
+  //     );
+  //   } catch (e) {
+  //     _showErrorMessage();
+  //     // Show an error message if adding to Firestore fails
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(
+  //         content: Text('Failed to add contact to Firestore'),
+  //         duration: Duration(seconds: 2),
+  //       ),
+  //     );
+  //   }
+  // }
+  Future<bool> _onWillPop() async {
+    return (await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Are you sure?'),
+            content: Text('Do you want to exit the app?'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text('No'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text('Yes'),
+              ),
+            ],
+          ),
+        )) ??
+        false;
   }
 
+
 }
+
 Color _generateRandomColor() {
   Random random = Random();
   return Color.fromRGBO(
@@ -610,6 +853,7 @@ Color _generateRandomColor() {
     1.0, // Opacity
   );
 }
+
 String _getPhoneNumber(Contact contact) {
   if (contact.phones!.isNotEmpty) {
     // Extracting the first phone number

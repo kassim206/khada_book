@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -13,7 +14,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 class BuisinessCard extends StatefulWidget {
-  const BuisinessCard({Key? key}) : super(key: key);
+  String userid;
+  BuisinessCard({Key? key, required this.userid}) : super(key: key);
 
   @override
   State<BuisinessCard> createState() => _BuisinessCardState();
@@ -48,6 +50,7 @@ class _BuisinessCardState extends State<BuisinessCard> {
     for (int i = 0; i < imageList.length; i++) {
       containerKeys.add(GlobalKey());
     }
+    
   }
 
   @override
@@ -55,7 +58,35 @@ class _BuisinessCardState extends State<BuisinessCard> {
     return Scaffold(
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [
+        children: [StreamBuilder<DocumentSnapshot>(
+  stream: FirebaseFirestore.instance
+      .collection('users')
+      .doc('${widget.userid}')
+      .snapshots(),
+  builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const CircularProgressIndicator();
+    }
+    if (snapshot.hasError) {
+      return Text('Error: ${snapshot.error}');
+    }
+    if (!snapshot.hasData || !snapshot.data!.exists) {
+      return const Text('User data not available.');
+    }
+
+    // Extract phone number from document snapshot
+    var userData = snapshot.data!.data() as Map<String, dynamic>?; 
+    var phoneNumber = userData != null ? userData['phone'] : null;
+
+    if (phoneNumber != null) {
+      return Text('Phone Number: $phoneNumber');
+    } else {
+      return const Text('Phone number not available.');
+    }
+  },
+),
+
+        
           CarouselSlider(
             options: CarouselOptions(
               aspectRatio: 16 / 9,

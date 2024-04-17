@@ -6,27 +6,24 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:khada_book/view/Home/transaction2.dart';
 
-class EditEntry extends StatefulWidget {
-  EditEntry(
+class CashbookEditEntry extends StatefulWidget {
+  CashbookEditEntry(
       {super.key,
       required this.amount,
       required this.color,
       required this.docid,
-      required this.name,
       required this.userId,
-      required this.customerid});
+      });
   String amount;
-  String name;
   Color color;
   final String docid;
   String userId;
-  final String customerid;
 
   @override
-  State<EditEntry> createState() => _EditEntryState();
+  State<CashbookEditEntry> createState() => _CashbookEditEntryState();
 }
 
-class _EditEntryState extends State<EditEntry> {
+class _CashbookEditEntryState extends State<CashbookEditEntry> {
   String? _pickedImagePath; // State to hold the picked image path
   DateTime? _selectedDate;
   TextEditingController _amtController = TextEditingController();
@@ -82,12 +79,12 @@ class _EditEntryState extends State<EditEntry> {
               widget.color == Colors.red ? Colors.red : Colors.green,
           title: widget.color == Colors.red
               ? Text(
-                  "You gave ₹ ${widget.amount} to ${widget.name}",
+                  "You gave ₹ ${widget.amount} of OUT",
                   style: const TextStyle(
                       fontSize: 16, fontWeight: FontWeight.bold),
                 )
               : Text(
-                  "You got ₹ ${widget.amount} from ${widget.name}",
+                  "You got ₹ ${widget.amount} of IN",
                   style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -286,36 +283,21 @@ class _EditEntryState extends State<EditEntry> {
                         ? ElevatedButton(
                             onPressed: () async {
                               print("${widget.docid}*************");
-                              print("${widget.customerid}*************");
                               try {
-                                if (_selectedDate != null) {
-                                  await FirebaseFirestore.instance
-                                      .collection('users')
-                                      .doc(widget.userId)
-                                      .collection('Customers')
-                                      .doc(widget.customerid)
-                                      .collection('youGave')
-                                      .doc(widget.docid)
-                                      .update({
-                                    'amount':
-                                        int.tryParse(_amtController.text) ?? 0,
-                                    'timestamp': _selectedDate,
-                                    // Update other fields if needed
-                                  });
-                                } else {
-                                  // Handle case where no date is selected
-                                  await FirebaseFirestore.instance
-                                      .collection('users')
-                                      .doc(widget.userId)
-                                      .collection('Customers')
-                                      .doc(widget.customerid)
-                                      .collection('youGave')
-                                      .doc(widget.docid)
-                                      .update({
-                                    'amount':
-                                        int.tryParse(_amtController.text) ?? 0,
-                                  });
-                                }
+                                await FirebaseFirestore.instance
+                                    .collection(
+                                        'users') // Reference the main collection
+                                    .doc(widget
+                                        .userId) // Reference a specific user document
+                                   
+                                    .collection('OUT')
+                                    .doc(widget
+                                        .docid) // Specify the document ID to update
+                                    .update({
+                                  'amount':
+                                      int.tryParse(_amtController.text) ?? 0,
+                                  // Update other fields if needed
+                                });
 
                                 print('Document updated successfully');
                               } catch (error) {
@@ -343,40 +325,21 @@ class _EditEntryState extends State<EditEntry> {
                               print("${widget.docid}///////////");
                               print("${widget.docid}///////////");
                               try {
-                                if (_selectedDate != null) {
-                                  await FirebaseFirestore.instance
-                                      .collection(
-                                          'users') // Reference the main collection
-                                      .doc(widget
-                                          .userId) // Reference a specific user document
-                                      .collection('Customers')
-                                      .doc(widget.customerid)
-                                      .collection('youGot')
-                                      .doc(widget
-                                          .docid) // Specify the document ID to update
-                                      .update({
-                                    'amount':
-                                        int.tryParse(_amtController.text) ?? 0,
-                                    // Update other fields if needed
-                                     'timestamp': _selectedDate,
-                                  });
-                                } else {
-                                   await FirebaseFirestore.instance
-                                      .collection(
-                                          'users') // Reference the main collection
-                                      .doc(widget
-                                          .userId) // Reference a specific user document
-                                      .collection('Customers')
-                                      .doc(widget.customerid)
-                                      .collection('youGot')
-                                      .doc(widget
-                                          .docid) // Specify the document ID to update
-                                      .update({
-                                    'amount':
-                                        int.tryParse(_amtController.text) ?? 0,
-                                    // Update other fields if needed
-                                  });
-                                }
+                                await FirebaseFirestore.instance
+                                    .collection(
+                                        'users') // Reference the main collection
+                                    .doc(widget
+                                        .userId) // Reference a specific user document
+                                    
+                                    .collection('IN')
+                                    .doc(widget
+                                        .docid) // Specify the document ID to update
+                                    .update({
+                                  'amount':
+                                      int.tryParse(_amtController.text) ?? 0,
+                                  // Update other fields if needed
+                                });
+
                                 print('Document updated successfully');
                               } catch (error) {
                                 print('Error updating document: $error');
@@ -410,27 +373,16 @@ class _EditEntryState extends State<EditEntry> {
   }
 
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime? pickedDate = await showDatePicker(
+    final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
     );
-
-    if (pickedDate != null) {
-      final DateTime pickedDateTime = DateTime(
-        pickedDate.year,
-        pickedDate.month,
-        pickedDate.day,
-        DateTime.now().hour,
-        DateTime.now().minute,
-      );
-
+    if (picked != null && picked != _selectedDate) {
       setState(() {
-        _selectedDate = pickedDateTime;
+        _selectedDate = picked;
       });
-
-      print(_selectedDate);
     }
   }
 

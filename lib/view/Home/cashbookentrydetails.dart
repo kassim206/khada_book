@@ -6,35 +6,32 @@ import 'dart:ui' as ui;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
+import 'package:khada_book/view/viewreport/cashbookeditentry.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
-import 'edit_entry.dart';
 
-class EntryDetails extends StatefulWidget {
+class CashbookEntryDetails extends StatefulWidget {
   String Amount;
-  String name;
   Color color;
   String date;
-  String number;
-  String Customerid;
+
   String docId;
   String userId;
-  EntryDetails(
-      {super.key,
-      required this.userId,
-      required this.docId,
-      required this.date,
-      required this.Amount,
-      required this.name,
-      required this.color,
-      required this.number,
-      required this.Customerid});
+  CashbookEntryDetails({
+    super.key,
+    required this.userId,
+    required this.docId,
+    required this.date,
+    required this.Amount,
+    required this.color,
+  });
 
   @override
-  State<EntryDetails> createState() => _EntryDetailsState();
+  State<CashbookEntryDetails> createState() => _CashbookEntryDetailsState();
 }
 
-class _EntryDetailsState extends State<EntryDetails> {
+class _CashbookEntryDetailsState extends State<CashbookEntryDetails> {
   GlobalKey _globalKey = GlobalKey();
   @override
   Widget build(BuildContext context) {
@@ -125,8 +122,6 @@ class _EntryDetailsState extends State<EntryDetails> {
                                                           color:
                                                               Colors.indigo))),
                                               onPressed: () {
-                                                print(
-                                                    "${widget.Customerid}===========");
                                                 Navigator.of(context).pop();
 
                                                 FirebaseFirestore.instance
@@ -134,9 +129,8 @@ class _EntryDetailsState extends State<EntryDetails> {
                                                         'users') // Reference the main collection
                                                     .doc(widget
                                                         .userId) // Reference a specific user document
-                                                    .collection('Customers')
-                                                    .doc(widget.Customerid)
-                                                    .collection('youGave')
+
+                                                    .collection('IN')
                                                     .doc(widget
                                                         .docId) // Specify the document ID to delete
                                                     .delete()
@@ -148,13 +142,12 @@ class _EntryDetailsState extends State<EntryDetails> {
                                                       'Error deleting document: $error');
                                                 });
                                                 FirebaseFirestore.instance
-                                                 .collection(
+                                                    .collection(
                                                         'users') // Reference the main collection
                                                     .doc(widget
                                                         .userId) // Reference a specific user document
-                                                    .collection('Customers')
-                                                    .doc(widget.Customerid)
-                                                    .collection('youGot')
+
+                                                    .collection('OUT')
                                                     .doc(widget
                                                         .docId) // Specify the document ID to delete
                                                     .delete()
@@ -253,17 +246,25 @@ class _EntryDetailsState extends State<EntryDetails> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     CircleAvatar(
-                                        backgroundColor: Color(
-                                                (Random().nextDouble() *
-                                                            0xFFFFFF)
-                                                        .toInt() <<
-                                                    0)
-                                            .withOpacity(1.0),
-                                        child: Text(
-                                          '${widget.name}'.substring(0, 1),
-                                          style: const TextStyle(
-                                              color: Colors.white),
-                                        )),
+                                        // backgroundColor: Color(
+                                        //         (Random().nextDouble() * 0xFFFFFF)
+                                        //                 .toInt() <<
+                                        //             0)
+                                        //     .withOpacity(1.0),
+                                        backgroundColor:
+                                            widget.color == Colors.green
+                                                ? Colors.green
+                                                : Colors.red,
+                                        foregroundColor: Colors.white,
+                                        child: widget.color == Colors.green
+                                            ? const Text(
+                                                "+",
+                                                style: TextStyle(fontSize: 25),
+                                              )
+                                            : const Text(
+                                                "-",
+                                                style: TextStyle(fontSize: 25),
+                                              )),
                                     const SizedBox(
                                       width: 15,
                                     ),
@@ -271,10 +272,16 @@ class _EntryDetailsState extends State<EntryDetails> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          widget.name,
-                                          style: const TextStyle(fontSize: 16),
-                                        ),
+                                        widget.color == Colors.red
+                                            ? const Text("OUT",
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                ))
+                                            : const Text("IN",
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                )),
+
                                         // Text(
                                         //   "09 Mar 24 • 01:59 PM",
                                         //   style: TextStyle(fontSize: 11),
@@ -294,15 +301,6 @@ class _EntryDetailsState extends State<EntryDetails> {
                                       style: TextStyle(
                                           fontSize: 18, color: widget.color),
                                     ),
-                                    widget.color == Colors.red
-                                        ? const Text("You gave",
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                            ))
-                                        : const Text("You got",
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                            ))
                                   ],
                                 )
                               ],
@@ -333,14 +331,12 @@ class _EntryDetailsState extends State<EntryDetails> {
                             InkWell(
                               onTap: () {
                                 Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (context) => EditEntry(
-                                      userId: widget.userId,
-                                      name: widget.name,
+                                    builder: ((context) => CashbookEditEntry(
+                                          userId: widget.userId,
                                           amount: "${widget.Amount}",
                                           color: widget.color,
                                           docid: widget.docId,
-                                          customerid: widget.Customerid,
-                                        )));
+                                        ))));
                               },
                               child: SizedBox(
                                 width: MediaQuery.of(context).size.width,
@@ -370,45 +366,6 @@ class _EntryDetailsState extends State<EntryDetails> {
               ),
               const SizedBox(
                 height: 10,
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                ),
-                child: Card(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5)),
-                  child: Container(
-                    padding: const EdgeInsets.only(left: 20),
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(5)),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        const Row(
-                          children: [
-                            Icon(Icons.message_outlined),
-                            Text(
-                              "   SMS disabled",
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                        const Divider(),
-                        Text("You got :  ₹ ${widget.Amount}"),
-                        Text("Send by : ${widget.number}"),
-                        const SizedBox(
-                          height: 15,
-                        ),
-                     
-                      ],
-                    ),
-                  ),
-                ),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),

@@ -1,6 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';// Import Firebase Core
-import 'package:khada_book/view/bottom_navbar/bottomnav.dart';
+import 'package:khada_book/loginpagee.dart';
+import 'package:khada_book/splashscreen.dart';
+import 'package:khada_book/view/viewreport/view_report.dart';
 import 'core/globel_variable.dart';
 import 'firebase_options.dart';
 // import 'firebase_options.dart';
@@ -25,7 +27,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'SherCashBook',
-      home: BasicBottomNavBar(),
+      home: SplashScreen(),
+   
     );
   }
 }

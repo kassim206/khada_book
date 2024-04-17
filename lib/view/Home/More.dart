@@ -5,13 +5,14 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:khada_book/loginpagee.dart';
 import 'package:khada_book/view/Home/buisinesscard.dart';
 import 'package:khada_book/view/Home/cashbook.dart';
 
 
 class More extends StatefulWidget {
-  const More({Key? key}) : super(key: key);
-
+   More({Key? key,required this.uid}) : super(key: key);
+String uid;
   @override
   State<More> createState() => _MoreState();
 }
@@ -23,8 +24,105 @@ class _MoreState extends State<More> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppBar(automaticallyImplyLeading: false,
         backgroundColor: Colors.indigo,
+        actions: [  GestureDetector(
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    actionsAlignment: MainAxisAlignment.spaceEvenly,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    title: Center(
+                      child: Column(
+                        children: [
+                          Text(
+                            "Logout",
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                          ),
+                          SizedBox(height: 10),
+                          Text(
+                            "Are You Sure?",
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
+                          ),
+                        ],
+                      ),
+                    ),
+                    actions: <Widget>[
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text(
+                                "Cancel",
+                                style: TextStyle(color: Colors.indigo),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                elevation: 5,
+                                minimumSize: Size(128, 46),
+                                backgroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                textStyle: TextStyle(
+                                  color: Colors.indigo,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 16), // Adjust spacing between buttons
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                await auth1.signOut(context);
+                                // Handle sign-out and navigation here
+                              },
+                              child: Text(
+                                "Yes",
+                                style: TextStyle(color: Colors.red),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                elevation: 5,
+                                minimumSize: Size(128, 46),
+                                backgroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                textStyle: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(6),
+                
+             
+              ),
+              child: Icon(
+                Icons.logout,
+                color: Colors.black,
+                size: 20,
+              ),
+            ),
+          ),
+],
       ),
       body: Column(
         children: [
@@ -84,7 +182,7 @@ class _MoreState extends State<More> {
                         InkWell(
                           onTap: () {
                             // _showBottomSheet(context);
-                            Navigator.of(context).push(MaterialPageRoute(builder: (context)=>BuisinessCard()));
+                            Navigator.of(context).push(MaterialPageRoute(builder: (context)=>BuisinessCard(userid: widget.uid,)));
                           },
                           child: Card(
                             shape: RoundedRectangleBorder(
@@ -122,7 +220,8 @@ class _MoreState extends State<More> {
                         InkWell(
                           onTap: () {
                             Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => const Cashbook()));
+                                builder: (context) =>  Cashbook(customerId: '',
+                                userId: widget.uid)));
                           },
                           child: Card(
                             shape: RoundedRectangleBorder(
@@ -163,12 +262,13 @@ class _MoreState extends State<More> {
                         ),
                       ],
                     ),
+                    
                   ],
                 ),
               ),
             ),
           ),
-        ],
+                ],
       ),
     );
   }

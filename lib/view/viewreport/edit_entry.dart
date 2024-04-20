@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:khada_book/view/Home/transaction2.dart';
@@ -14,10 +15,14 @@ class EditEntry extends StatefulWidget {
       required this.docid,
       required this.name,
       required this.userId,
+      required this.details,
+      required this.date,
       required this.customerid});
   String amount;
   String name;
   Color color;
+  String date;
+  String details;
   final String docid;
   String userId;
   final String customerid;
@@ -30,15 +35,21 @@ class _EditEntryState extends State<EditEntry> {
   String? _pickedImagePath; // State to hold the picked image path
   DateTime? _selectedDate;
   TextEditingController _amtController = TextEditingController();
+  TextEditingController _detailsController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     _amtController.text = widget.amount;
+    _detailsController.text = widget.details;
+    widget.date;
+    print(widget.date);
   }
 
   @override
   void dispose() {
     _amtController.dispose();
+    _detailsController.dispose();
     super.dispose();
   }
 
@@ -142,6 +153,7 @@ class _EditEntryState extends State<EditEntry> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: TextFormField(
+                        controller: _detailsController,
                         decoration: InputDecoration(
                           hintText:
                               'Enter details (Items,bill no.,quantity,etc.)',
@@ -206,7 +218,9 @@ class _EditEntryState extends State<EditEntry> {
                                       child: Text(_selectedDate != null
                                           ? DateFormat('dd MMM yy')
                                               .format(_selectedDate!)
-                                          : "Select Date")),
+                                          : widget.date == null
+                                              ? "Select Date"
+                                              : formatCustomDate(widget.date))),
                                   Icon(
                                     Icons.arrow_drop_down,
                                     color: widget.color == Colors.red
@@ -289,6 +303,7 @@ class _EditEntryState extends State<EditEntry> {
                               print("${widget.customerid}*************");
                               try {
                                 if (_selectedDate != null) {
+                                  
                                   await FirebaseFirestore.instance
                                       .collection('users')
                                       .doc(widget.userId)
@@ -300,6 +315,8 @@ class _EditEntryState extends State<EditEntry> {
                                     'amount':
                                         int.tryParse(_amtController.text) ?? 0,
                                     'timestamp': _selectedDate,
+                                    'details': _detailsController
+                                        .text, // Include the details field here
                                     // Update other fields if needed
                                   });
                                 } else {
@@ -314,6 +331,8 @@ class _EditEntryState extends State<EditEntry> {
                                       .update({
                                     'amount':
                                         int.tryParse(_amtController.text) ?? 0,
+                                    'details': _detailsController
+                                        .text, // Include the details field here
                                   });
                                 }
 
@@ -358,10 +377,12 @@ class _EditEntryState extends State<EditEntry> {
                                     'amount':
                                         int.tryParse(_amtController.text) ?? 0,
                                     // Update other fields if needed
-                                     'timestamp': _selectedDate,
+                                    'timestamp': _selectedDate,
+                                    'details': _detailsController
+                                        .text, // Include the details field here
                                   });
                                 } else {
-                                   await FirebaseFirestore.instance
+                                  await FirebaseFirestore.instance
                                       .collection(
                                           'users') // Reference the main collection
                                       .doc(widget
@@ -374,6 +395,8 @@ class _EditEntryState extends State<EditEntry> {
                                       .update({
                                     'amount':
                                         int.tryParse(_amtController.text) ?? 0,
+                                    'details': _detailsController
+                                        .text, // Include the details field here
                                     // Update other fields if needed
                                   });
                                 }
@@ -504,5 +527,13 @@ class _EditEntryState extends State<EditEntry> {
       });
       print('Image picked: ${pickedImage.path}');
     }
+  }
+
+  String formatCustomDate(String dateString) {
+    // Parsing the date string
+    DateTime date = DateFormat('dd MMM yy • hh:mm a').parse(dateString);
+
+    // Formatting the date in desired format
+    return DateFormat('dd MMM yy').format(date);
   }
 }

@@ -28,6 +28,12 @@ class _SignUpPageState extends State<SignUpPage> {
   final signphonecontroller = TextEditingController();
   @override
   Widget build(BuildContext context) {
+      SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp, // Allow only portrait orientation
+      // DeviceOrientation.landscapeLeft, // Allow landscape left orientation
+      // DeviceOrientation.landscapeRight, // Allow landscape right orientation
+      // Add more orientations as needed
+    ]);
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
@@ -114,7 +120,7 @@ class _SignUpPageState extends State<SignUpPage> {
                               child: TextFormField(
                                 controller: usernamecontroller,
                                 style: GoogleFonts.poppins(
-                                    color: Color(0xffBBC5CD),
+                                    color: const Color(0xffBBC5CD),
                                     fontSize: w * .039),
                                 keyboardType: TextInputType.name,
                                 decoration: InputDecoration(
@@ -122,7 +128,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                   focusedBorder: InputBorder.none,
                                   hintText: "Full name",
                                   hintStyle: GoogleFonts.poppins(
-                                      color: Color(0xffBBC5CD),
+                                      color: const Color(0xffBBC5CD),
                                       fontSize: w * .039),
                                 ),
                               ),
@@ -154,7 +160,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                 autovalidateMode:
                                 AutovalidateMode.onUserInteraction,
                                 style: GoogleFonts.poppins(
-                                    color: Color(0xffBBC5CD),
+                                    color: const Color(0xffBBC5CD),
                                     fontSize: w * .039),
                                 keyboardType: TextInputType.emailAddress,
                                 decoration: InputDecoration(
@@ -162,14 +168,14 @@ class _SignUpPageState extends State<SignUpPage> {
                                   focusedBorder: InputBorder.none,
                                   hintText: "Email",
                                   hintStyle: GoogleFonts.poppins(
-                                      color: Color(0xffBBC5CD),
+                                      color: const Color(0xffBBC5CD),
                                       fontSize: w * .039),
                                 ),
                               ),
                             ),
                           ),
                           SizedBox(
-                            height: h * .032,
+                            height: h * .020,
                           ),
                           // Text(
                           //   'Your age and birth date',
@@ -258,9 +264,9 @@ class _SignUpPageState extends State<SignUpPage> {
                           //     ),
                           //   ],
                           // ),
-                          SizedBox(
-                            height: h * .034375,
-                          ),
+                          // SizedBox(
+                          //   height: h * .034375,
+                          // ),
                           Text(
                             'Phone Number',
                             style: GoogleFonts.lexend(
@@ -282,7 +288,7 @@ class _SignUpPageState extends State<SignUpPage> {
                               child: TextFormField(
                                 controller: signphonecontroller,
                                 style: GoogleFonts.poppins(
-                                    color: Color(0xffBBC5CD),
+                                    color: const Color(0xffBBC5CD),
                                     fontSize: w * .039),
                                 keyboardType: TextInputType.number,
                                 decoration: InputDecoration(
@@ -313,7 +319,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                 controller: signpasswardcontroller,
                                 obscureText: obsc,
                                 style: GoogleFonts.poppins(
-                                    color: Color(0xffBBC5CD),
+                                    color: const Color(0xffBBC5CD),
                                     fontSize: w * .039),
                                 keyboardType: TextInputType.name,
                                 decoration: InputDecoration(
@@ -331,7 +337,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                           obsc = ! obsc;
                                         });
                                       },
-                                      child: obsc?Icon(Icons.visibility):Icon(Icons.visibility_off),
+                                      child: obsc?const Icon(Icons.visibility):const Icon(Icons.visibility_off),
                                     )
                                 ),
                               ),
@@ -353,7 +359,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                 controller: signconfirmpassword,
                                
                                 style: GoogleFonts.poppins(
-                                    color: Color(0xffBBC5CD),
+                                    color: const Color(0xffBBC5CD),
                                     fontSize: w * .039),
                                 keyboardType: TextInputType.name,
                                 decoration: InputDecoration(
@@ -363,13 +369,13 @@ class _SignUpPageState extends State<SignUpPage> {
                                           obsc1 = ! obsc1;
                                         });
                                       },
-                                      child: obsc?Icon(Icons.visibility):Icon(Icons.visibility_off),
+                                      child: obsc?const Icon(Icons.visibility):const Icon(Icons.visibility_off),
                                     ),
                                   border: InputBorder.none,
                                   focusedBorder: InputBorder.none,
                                   hintText: "Confirm Password",
                                   hintStyle: GoogleFonts.poppins(
-                                      color: Color(0xffBBC5CD),
+                                      color: const Color(0xffBBC5CD),
                                       fontSize: w * .039),
                                   filled: true,
                                   fillColor: Colors.white,
@@ -419,7 +425,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             if (email.isEmpty || password.isEmpty || username.isEmpty || phoneNumber.isEmpty) {
                               // Show error message or handle invalid input
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Please fill in all fields.')),
+                                const SnackBar(content: Text('Please fill in all fields.')),
                               );
                               return;
                             }
@@ -445,12 +451,12 @@ class _SignUpPageState extends State<SignUpPage> {
                               FirebaseFirestore.instance.collection('users').add(userModel.toJson()).then((value) {
                                 // Show success message
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(backgroundColor: Colors.white,content: Text('Sign up successful!',style: TextStyle(color: Colors.black),)),
+                                  const SnackBar(backgroundColor: Colors.white,content: Text('Sign up successful!',style: TextStyle(color: Colors.black),)),
                                 );
                                 // Navigate to login page after successful registration
                                 Navigator.pushReplacement(
                                   context,
-                                  MaterialPageRoute(builder: (context) => LoginPage()),
+                                  MaterialPageRoute(builder: (context) => const LoginPage()),
                                 );
                               }).catchError((error) {
                                 // Handle Firestore save error
@@ -479,7 +485,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             height: h * .06,
                             decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(13),
-                                color: Color(0xff343434)),
+                                color: const Color(0xff343434)),
                             child: Center(
                               child: Text(
                                 'Sign Up',

@@ -50,7 +50,6 @@ class _BuisinessCardState extends State<BuisinessCard> {
     for (int i = 0; i < imageList.length; i++) {
       containerKeys.add(GlobalKey());
     }
-    
   }
 
   @override
@@ -58,35 +57,33 @@ class _BuisinessCardState extends State<BuisinessCard> {
     return Scaffold(
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [StreamBuilder<DocumentSnapshot>(
-  stream: FirebaseFirestore.instance
-      .collection('users')
-      .doc('${widget.userid}')
-      .snapshots(),
-  builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-    if (snapshot.connectionState == ConnectionState.waiting) {
-      return const CircularProgressIndicator();
-    }
-    if (snapshot.hasError) {
-      return Text('Error: ${snapshot.error}');
-    }
-    if (!snapshot.hasData || !snapshot.data!.exists) {
-      return const Text('User data not available.');
-    }
+        children: [
+          // StreamBuilder<DocumentSnapshot>(
+          //     stream: FirebaseFirestore.instance
+          //         .collection('users')
+          //         .doc(widget.userid)
+          //         .snapshots(),
+          //     builder: (BuildContext context,
+          //         AsyncSnapshot<DocumentSnapshot> snapshot) {
+          //       if (snapshot.hasError) {
+          //         return Text('Error: ${snapshot.error}');
+          //       }
 
-    // Extract phone number from document snapshot
-    var userData = snapshot.data!.data() as Map<String, dynamic>?; 
-    var phoneNumber = userData != null ? userData['phone'] : null;
+          //       if (snapshot.connectionState == ConnectionState.waiting) {
+          //         return const CircularProgressIndicator();
+          //       }
 
-    if (phoneNumber != null) {
-      return Text('Phone Number: $phoneNumber');
-    } else {
-      return const Text('Phone number not available.');
-    }
-  },
-),
+          //       // Extracting data from snapshot
+          //       var userData = snapshot.data!.data() as Map<String, dynamic>?;
+          //       ;
+          //       var phoneNo = userData!['phoneNo'];
 
-        
+          //       return Text('${phoneNo}',
+          //           style: TextStyle(
+          //               fontSize: 14,
+          //               fontWeight: FontWeight.bold,
+          //               color: Colors.black));
+          //     }),
           CarouselSlider(
             options: CarouselOptions(
               aspectRatio: 16 / 9,
@@ -107,61 +104,215 @@ class _BuisinessCardState extends State<BuisinessCard> {
                   child: RepaintBoundary(
                     key: containerKeys[index],
                     child: Container(
-                      height: 400,
-                      width: MediaQuery.of(context).size.width,
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: AssetImage(item["Image"]),
-                          fit: BoxFit.cover,
+                        height: 400,
+                        width: MediaQuery.of(context).size.width,
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage(item["Image"]),
+                            fit: BoxFit.cover,
+                          ),
                         ),
-                      ),
-                      child: _selectedIndex == 1
-                          ? Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    item["Text"],
-                                    style: const TextStyle(
-                                      color: Colors.indigo,
-                                      fontSize: 15,
+                        child: _selectedIndex == 0
+                            ? Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    StreamBuilder<DocumentSnapshot>(
+                                        stream: FirebaseFirestore.instance
+                                            .collection('users')
+                                            .doc(widget.userid)
+                                            .snapshots(),
+                                        builder: (BuildContext context,
+                                            AsyncSnapshot<DocumentSnapshot>
+                                                snapshot) {
+                                          if (snapshot.hasError) {
+                                            return Text(
+                                                'Error: ${snapshot.error}');
+                                          }
+
+                                          if (snapshot.connectionState ==
+                                              ConnectionState.waiting) {
+                                            return const CircularProgressIndicator();
+                                          }
+
+                                          // Extracting data from snapshot
+                                          var userData = snapshot.data!.data()
+                                              as Map<String, dynamic>?;
+                                          ;
+                                          var phoneNo = userData!['phoneNo'];
+                                          var businessName =
+                                              userData!['businessName'];
+
+                                          return Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text('${phoneNo ?? ''}',
+                                                  style: const TextStyle(
+                                                      fontSize: 14,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.black)),
+                                              Text('${businessName ?? ''}',
+                                                  style: const TextStyle(
+                                                      fontSize: 14,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.black)),
+                                            ],
+                                          );
+                                        }),
+                                    // Text(
+                                    //   item["Phone"],
+                                    //   style: const TextStyle(
+                                    //     color: Colors.indigo,
+                                    //     fontSize: 15,
+                                    //   ),
+                                    // ),
+                                  ],
+                                ),
+                              )
+                            : _selectedIndex == 1
+                                ? Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        StreamBuilder<DocumentSnapshot>(
+                                            stream: FirebaseFirestore.instance
+                                                .collection('users')
+                                                .doc(widget.userid)
+                                                .snapshots(),
+                                            builder: (BuildContext context,
+                                                AsyncSnapshot<DocumentSnapshot>
+                                                    snapshot) {
+                                              if (snapshot.hasError) {
+                                                return Text(
+                                                    'Error: ${snapshot.error}');
+                                              }
+
+                                              if (snapshot.connectionState ==
+                                                  ConnectionState.waiting) {
+                                                return const CircularProgressIndicator();
+                                              }
+
+                                              // Extracting data from snapshot
+                                              var userData =
+                                                  snapshot.data!.data()
+                                                      as Map<String, dynamic>?;
+                                              ;
+                                              var phoneNo =
+                                                  userData!['phoneNo'];
+                                              var businessName =
+                                                  userData!['businessName'];
+
+                                              return Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text('${businessName ?? ''}',
+                                                      style: const TextStyle(
+                                                          fontSize: 14,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Colors.black)),
+                                                  Text('${phoneNo ?? ''}',
+                                                      style: const TextStyle(
+                                                          fontSize: 14,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Colors.black)),
+                                                ],
+                                              );
+                                            }),
+                                        // Text(
+                                        //   item["Phone"],
+                                        //   style: const TextStyle(
+                                        //     color: Colors.indigo,
+                                        //     fontSize: 15,
+                                        //   ),
+                                        // ),
+                                      ],
                                     ),
-                                  ),
-                                  Text(
-                                    item["Phone"],
-                                    style: const TextStyle(
-                                      color: Colors.indigo,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          : Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    item["Text"],
-                                    style: const TextStyle(
-                                      color: Colors.indigo,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                  Text(
-                                    item["Phone"],
-                                    style: const TextStyle(
-                                      color: Colors.indigo,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                    ),
+                                  )
+                                : _selectedIndex == 2
+                                    ? Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            StreamBuilder<DocumentSnapshot>(
+                                                stream: FirebaseFirestore
+                                                    .instance
+                                                    .collection('users')
+                                                    .doc(widget.userid)
+                                                    .snapshots(),
+                                                builder: (BuildContext context,
+                                                    AsyncSnapshot<
+                                                            DocumentSnapshot>
+                                                        snapshot) {
+                                                  if (snapshot.hasError) {
+                                                    return Text(
+                                                        'Error: ${snapshot.error}');
+                                                  }
+
+                                                  if (snapshot
+                                                          .connectionState ==
+                                                      ConnectionState.waiting) {
+                                                    return const CircularProgressIndicator();
+                                                  }
+
+                                                  // Extracting data from snapshot
+                                                  var userData = snapshot.data!
+                                                          .data()
+                                                      as Map<String, dynamic>?;
+                                                  ;
+                                                  var phoneNo =
+                                                      userData!['phoneNo'];
+                                                  var businessName =
+                                                      userData!['businessName'];
+
+                                                  return Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment.end,
+                                                    children: [
+                                                      Text(
+                                                          '${businessName ?? ''}',
+                                                          style:
+                                                              const TextStyle(
+                                                                  fontSize: 14,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  color: Colors
+                                                                      .black)),
+                                                      Text('${phoneNo ?? ''}',
+                                                          style:
+                                                              const TextStyle(
+                                                                  fontSize: 14,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  color: Colors
+                                                                      .black)),
+                                                    ],
+                                                  );
+                                                }),
+                                            // Text(
+                                            //   item["Phone"],
+                                            //   style: const TextStyle(
+                                            //     color: Colors.indigo,
+                                            //     fontSize: 15,
+                                            //   ),
+                                            // ),
+                                          ],
+                                        ),
+                                      )
+                                    : Container()),
                   ),
                 ),
               );
@@ -328,7 +479,7 @@ class _BuisinessCardState extends State<BuisinessCard> {
         if (path.isNotEmpty) {
           // Download successful
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Image downloaded successfully!')),
+            const SnackBar(content: Text('Image downloaded successfully!')),
           );
         } else {
           // Unable to save image

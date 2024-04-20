@@ -16,12 +16,14 @@ class EntryDetails extends StatefulWidget {
   Color color;
   String date;
   String number;
+   String details;
   String Customerid;
   String docId;
   String userId;
   EntryDetails(
       {super.key,
       required this.userId,
+       required this.details,
       required this.docId,
       required this.date,
       required this.Amount,
@@ -334,7 +336,9 @@ class _EntryDetailsState extends State<EntryDetails> {
                               onTap: () {
                                 Navigator.of(context).push(MaterialPageRoute(
                                     builder: (context) => EditEntry(
+                                      details: widget.details,
                                       userId: widget.userId,
+                                      date: widget.date,
                                       name: widget.name,
                                           amount: "${widget.Amount}",
                                           color: widget.color,

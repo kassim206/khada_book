@@ -13,11 +13,14 @@ class CashbookEditEntry extends StatefulWidget {
       required this.color,
       required this.docid,
       required this.userId,
-      });
+      required this.date,
+      required this.details});
   String amount;
   Color color;
   final String docid;
   String userId;
+  String date;
+  String details;
 
   @override
   State<CashbookEditEntry> createState() => _CashbookEditEntryState();
@@ -27,15 +30,21 @@ class _CashbookEditEntryState extends State<CashbookEditEntry> {
   String? _pickedImagePath; // State to hold the picked image path
   DateTime? _selectedDate;
   TextEditingController _amtController = TextEditingController();
+  TextEditingController _detailsController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     _amtController.text = widget.amount;
+    _detailsController.text = widget.details;
+    widget.date;
+    print(widget.date);
   }
 
   @override
   void dispose() {
     _amtController.dispose();
+    _detailsController.dispose();
     super.dispose();
   }
 
@@ -139,6 +148,7 @@ class _CashbookEditEntryState extends State<CashbookEditEntry> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: TextFormField(
+                        controller: _detailsController,
                         decoration: InputDecoration(
                           hintText:
                               'Enter details (Items,bill no.,quantity,etc.)',
@@ -203,7 +213,9 @@ class _CashbookEditEntryState extends State<CashbookEditEntry> {
                                       child: Text(_selectedDate != null
                                           ? DateFormat('dd MMM yy')
                                               .format(_selectedDate!)
-                                          : "Select Date")),
+                                          : widget.date == null
+                                              ? "Select Date"
+                                              : formatCustomDate(widget.date))),
                                   Icon(
                                     Icons.arrow_drop_down,
                                     color: widget.color == Colors.red
@@ -284,21 +296,42 @@ class _CashbookEditEntryState extends State<CashbookEditEntry> {
                             onPressed: () async {
                               print("${widget.docid}*************");
                               try {
-                                await FirebaseFirestore.instance
-                                    .collection(
-                                        'users') // Reference the main collection
-                                    .doc(widget
-                                        .userId) // Reference a specific user document
-                                   
-                                    .collection('OUT')
-                                    .doc(widget
-                                        .docid) // Specify the document ID to update
-                                    .update({
-                                  'amount':
-                                      int.tryParse(_amtController.text) ?? 0,
-                                  // Update other fields if needed
-                                });
+                                if (_selectedDate != null) {
+                                  await FirebaseFirestore.instance
+                                      .collection(
+                                          'users') // Reference the main collection
+                                      .doc(widget
+                                          .userId) // Reference a specific user document
 
+                                      .collection('OUT')
+                                      .doc(widget
+                                          .docid) // Specify the document ID to update
+                                      .update({
+                                    'amount':
+                                        int.tryParse(_amtController.text) ?? 0,
+                                    'timestamp': _selectedDate,
+                                    'details': _detailsController
+                                        .text, // Include the details field here
+                                    // Update other fields if needed
+                                  });
+                                } else {
+                                  await FirebaseFirestore.instance
+                                      .collection(
+                                          'users') // Reference the main collection
+                                      .doc(widget
+                                          .userId) // Reference a specific user document
+
+                                      .collection('OUT')
+                                      .doc(widget
+                                          .docid) // Specify the document ID to update
+                                      .update({
+                                    'amount':
+                                        int.tryParse(_amtController.text) ?? 0,
+                                    'details': _detailsController
+                                        .text, // Include the details field here
+                                    // Update other fields if needed
+                                  });
+                                }
                                 print('Document updated successfully');
                               } catch (error) {
                                 print('Error updating document: $error');
@@ -325,21 +358,42 @@ class _CashbookEditEntryState extends State<CashbookEditEntry> {
                               print("${widget.docid}///////////");
                               print("${widget.docid}///////////");
                               try {
+                                 if (_selectedDate != null) {
                                 await FirebaseFirestore.instance
                                     .collection(
                                         'users') // Reference the main collection
                                     .doc(widget
                                         .userId) // Reference a specific user document
-                                    
+
                                     .collection('IN')
                                     .doc(widget
                                         .docid) // Specify the document ID to update
                                     .update({
                                   'amount':
                                       int.tryParse(_amtController.text) ?? 0,
+                                  'timestamp': _selectedDate,
+                                  'details': _detailsController
+                                      .text, // Include the details field here
                                   // Update other fields if needed
                                 });
+                                 }else{
+                                      await FirebaseFirestore.instance
+                                    .collection(
+                                        'users') // Reference the main collection
+                                    .doc(widget
+                                        .userId) // Reference a specific user document
 
+                                    .collection('IN')
+                                    .doc(widget
+                                        .docid) // Specify the document ID to update
+                                    .update({
+                                  'amount':
+                                      int.tryParse(_amtController.text) ?? 0,
+                                  'details': _detailsController
+                                      .text, // Include the details field here
+                                  // Update other fields if needed
+                                });
+                                 }
                                 print('Document updated successfully');
                               } catch (error) {
                                 print('Error updating document: $error');
@@ -457,4 +511,12 @@ class _CashbookEditEntryState extends State<CashbookEditEntry> {
       print('Image picked: ${pickedImage.path}');
     }
   }
+}
+
+String formatCustomDate(String dateString) {
+  // Parsing the date string
+  DateTime date = DateFormat('dd MMM yy • hh:mm a').parse(dateString);
+
+  // Formatting the date in desired format
+  return DateFormat('dd MMM yy').format(date);
 }

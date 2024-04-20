@@ -144,7 +144,7 @@ class _CashbookState extends State<Cashbook> {
         body: Column(
           children: [
             Container(
-              height: 170,
+              // height: 170,
               width: MediaQuery.of(context).size.width,
               color: Colors.indigo,
               child: Padding(
@@ -161,7 +161,7 @@ class _CashbookState extends State<Cashbook> {
                       padding: const EdgeInsets.all(8),
                       child: Column(
                         children: [
-                           Row(
+                          Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               // Column(
@@ -174,12 +174,72 @@ class _CashbookState extends State<Cashbook> {
                               //   ],
                               // ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 5.0),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 5.0),
                                 child: Column(
                                   children: [
                                     Row(
                                       children: [
                                         // Text("Total Balance   :  "),
+                                        // StreamBuilder<DocumentSnapshot>(
+                                        //   stream: FirebaseFirestore.instance
+                                        //       .collection('users')
+                                        //       .doc(widget.userId)
+                                        //       .snapshots(),
+                                        //   builder: (BuildContext context,
+                                        //       AsyncSnapshot<DocumentSnapshot>
+                                        //           snapshot) {
+                                        //     if (snapshot.connectionState ==
+                                        //         ConnectionState.waiting) {
+                                        //       return const Center(
+                                        //           child: Text(""));
+                                        //     }
+                                        //     if (snapshot.hasError) {
+                                        //       return Text(
+                                        //           'Error: ${snapshot.error}');
+                                        //     }
+
+                                        //     // Get the user document data
+                                        //     var userData = snapshot.data!.data()
+                                        //         as Map<String, dynamic>?;
+                                        //     double totalAmountGiven = 0;
+                                        //     double totalAmountReceived = 0;
+
+                                        //     // Check if the document exists and contains the totalAmountGiven
+                                        //     if (userData != null &&
+                                        //         userData.containsKey(
+                                        //             'totalAmountGiven')) {
+                                        //       totalAmountGiven =
+                                        //           userData['totalAmountGiven'];
+                                        //     }
+
+                                        //     // Check if the document exists and contains the totalAmountReceived
+                                        //     if (userData != null &&
+                                        //         userData.containsKey(
+                                        //             'totalAmountReceived')) {
+                                        //       totalAmountReceived = userData[
+                                        //           'totalAmountReceived'];
+                                        //     }
+
+                                        //     // Calculate the net amount
+                                        //     double netAmount =
+                                        //         totalAmountGiven -
+                                        //             totalAmountReceived;
+
+                                        //     // Now you can use netAmount wherever needed
+                                        //     // For example, display it in a Text widget
+                                        //     return Text(
+                                        //       'Total Balance: ₹ ${netAmount.toInt().abs()}',
+                                        //       style: TextStyle(
+                                        //         fontSize: 12,
+                                        //         fontWeight: FontWeight.bold,
+                                        //         color: netAmount >= 0
+                                        //             ? Colors.green
+                                        //             : Colors.red,
+                                        //       ),
+                                        //     );
+                                        //   },
+                                        // ),
                                         StreamBuilder<DocumentSnapshot>(
                                           stream: FirebaseFirestore.instance
                                               .collection('users')
@@ -191,42 +251,51 @@ class _CashbookState extends State<Cashbook> {
                                             if (snapshot.connectionState ==
                                                 ConnectionState.waiting) {
                                               return const Center(
-                                                  child: Text(""));
+                                                  child:
+                                                      CircularProgressIndicator());
                                             }
                                             if (snapshot.hasError) {
                                               return Text(
                                                   'Error: ${snapshot.error}');
                                             }
 
-                                            // Get the user document data
+                                            // Get the user document data from the snapshot
                                             var userData = snapshot.data!.data()
                                                 as Map<String, dynamic>?;
-                                            double totalAmountGiven = 0;
-                                            double totalAmountReceived = 0;
 
-                                            // Check if the document exists and contains the totalAmountGiven
-                                            if (userData != null &&
-                                                userData.containsKey(
-                                                    'totalAmountGiven')) {
-                                              totalAmountGiven =
-                                                  userData['totalAmountGiven'];
-                                            }
-
-                                            // Check if the document exists and contains the totalAmountReceived
-                                            if (userData != null &&
-                                                userData.containsKey(
-                                                    'totalAmountReceived')) {
-                                              totalAmountReceived = userData[
-                                                  'totalAmountReceived'];
-                                            }
+                                            // Get the totalAmountGiven and totalAmountReceived from the fetched data
+                                            double totalAmountGiven =
+                                                userData?['totalAmountGiven'] ??
+                                                    0;
+                                            double totalAmountReceived =
+                                                userData?[
+                                                        'totalAmountReceived'] ??
+                                                    0;
 
                                             // Calculate the net amount
                                             double netAmount =
                                                 totalAmountGiven -
                                                     totalAmountReceived;
 
-                                            // Now you can use netAmount wherever needed
-                                            // For example, display it in a Text widget
+                                            // Update netAmount to a collection and add timestamp to Firestore
+                                            FirebaseFirestore.instance
+                                                .collection('users')
+                                                .doc(widget.userId)
+                                                .collection('netAmounts')
+                                                .add({
+                                              'userId': widget.userId,
+                                              'netAmount': netAmount,
+                                              'timestamp':
+                                                  FieldValue.serverTimestamp(),
+                                            }).then((value) {
+                                              print(
+                                                  'Net amount updated successfully');
+                                            }).catchError((error) {
+                                              print(
+                                                  'Failed to update net amount: $error');
+                                            });
+
+                                            // Return your UI widget
                                             return Text(
                                               'Total Balance: ₹ ${netAmount.toInt().abs()}',
                                               style: TextStyle(
@@ -257,7 +326,7 @@ class _CashbookState extends State<Cashbook> {
                                   decoration: BoxDecoration(
                                       border: Border.all(),
                                       borderRadius: BorderRadius.circular(5)),
-                                  child:  Row(
+                                  child: Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
@@ -277,65 +346,66 @@ class _CashbookState extends State<Cashbook> {
                                       ),
                                       Column(
                                         children: [
-                                           StreamBuilder<DocumentSnapshot>(
-                                          stream: FirebaseFirestore.instance
-                                              .collection('users')
-                                              .doc(widget.userId)
-                                              .snapshots(),
-                                          builder: (BuildContext context,
-                                              AsyncSnapshot<DocumentSnapshot>
-                                                  snapshot) {
-                                            if (snapshot.connectionState ==
-                                                ConnectionState.waiting) {
-                                              return const Center(
-                                                  child: Text(""));
-                                            }
-                                            if (snapshot.hasError) {
+                                          StreamBuilder<DocumentSnapshot>(
+                                            stream: FirebaseFirestore.instance
+                                                .collection('users')
+                                                .doc(widget.userId)
+                                                .snapshots(),
+                                            builder: (BuildContext context,
+                                                AsyncSnapshot<DocumentSnapshot>
+                                                    snapshot) {
+                                              if (snapshot.connectionState ==
+                                                  ConnectionState.waiting) {
+                                                return const Center(
+                                                    child: Text(""));
+                                              }
+                                              if (snapshot.hasError) {
+                                                return Text(
+                                                    'Error: ${snapshot.error}');
+                                              }
+
+                                              // Get the user document data
+                                              var userData =
+                                                  snapshot.data!.data()
+                                                      as Map<String, dynamic>?;
+                                              double totalAmountGiven = 0;
+                                              double totalAmountReceived = 0;
+
+                                              // Check if the document exists and contains the totalAmountGiven
+                                              if (userData != null &&
+                                                  userData.containsKey(
+                                                      'totalAmountGiven')) {
+                                                totalAmountGiven = userData[
+                                                    'totalAmountGiven'];
+                                              }
+
+                                              // Check if the document exists and contains the totalAmountReceived
+                                              if (userData != null &&
+                                                  userData.containsKey(
+                                                      'totalAmountReceived')) {
+                                                totalAmountReceived = userData[
+                                                    'totalAmountReceived'];
+                                              }
+
+                                              // Calculate the net amount
+                                              double netAmount =
+                                                  totalAmountGiven -
+                                                      totalAmountReceived;
+
+                                              // Now you can use netAmount wherever needed
+                                              // For example, display it in a Text widget
                                               return Text(
-                                                  'Error: ${snapshot.error}');
-                                            }
-
-                                            // Get the user document data
-                                            var userData = snapshot.data!.data()
-                                                as Map<String, dynamic>?;
-                                            double totalAmountGiven = 0;
-                                            double totalAmountReceived = 0;
-
-                                            // Check if the document exists and contains the totalAmountGiven
-                                            if (userData != null &&
-                                                userData.containsKey(
-                                                    'totalAmountGiven')) {
-                                              totalAmountGiven =
-                                                  userData['totalAmountGiven'];
-                                            }
-
-                                            // Check if the document exists and contains the totalAmountReceived
-                                            if (userData != null &&
-                                                userData.containsKey(
-                                                    'totalAmountReceived')) {
-                                              totalAmountReceived = userData[
-                                                  'totalAmountReceived'];
-                                            }
-
-                                            // Calculate the net amount
-                                            double netAmount =
-                                                totalAmountGiven -
-                                                    totalAmountReceived;
-
-                                            // Now you can use netAmount wherever needed
-                                            // For example, display it in a Text widget
-                                            return Text(
-                                              '₹ ${netAmount.toInt().abs()}',
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.bold,
-                                                color: netAmount >= 0
-                                                    ? Colors.green
-                                                    : Colors.red,
-                                              ),
-                                            );
-                                          },
-                                        ),
+                                                '₹ ${netAmount.toInt().abs()}',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: netAmount >= 0
+                                                      ? Colors.green
+                                                      : Colors.red,
+                                                ),
+                                              );
+                                            },
+                                          ),
                                           // Text(
                                           //   "₹ 50",
                                           //   style: TextStyle(fontSize: 10),
@@ -396,8 +466,9 @@ class _CashbookState extends State<Cashbook> {
                           InkWell(
                             onTap: () {
                               Navigator.of(context).push(MaterialPageRoute(
-                                  builder: ((context) =>
-                                      const CashbookReport())));
+                                  builder: ((context) => CashbookReport(
+                                        userid: widget.userId,
+                                      ))));
                             },
                             child: const Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -445,7 +516,7 @@ class _CashbookState extends State<Cashbook> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text("13 MAR", style: TextStyle(fontSize: 10)),
+                        // const Text("13 MAR", style: TextStyle(fontSize: 10)),
                         totalentries == null
                             ? const Text("")
                             : Text("$totalentries Entries",
@@ -501,7 +572,7 @@ class _CashbookState extends State<Cashbook> {
                               }
 
                               // Return a default widget if totalAmountGiven is not available
-                              return const Text('Total Amount Given not available');
+                              return const Text('');
                             },
                           )
                         ],
@@ -550,7 +621,7 @@ class _CashbookState extends State<Cashbook> {
                               }
 
                               // Return a default widget if totalAmountGiven is not available
-                              return const Text('Total Amount Given not available');
+                              return const Text('');
                             },
                           )
                         ],
@@ -736,6 +807,8 @@ class _CashbookState extends State<Cashbook> {
                                                       MaterialPageRoute(
                                                           builder: ((context) =>
                                                               CashbookEntryDetails(
+                                                                details:
+                                                                    '${transaction1['details'] ?? ''}',
                                                                 docId: docId1,
                                                                 userId: widget
                                                                     .userId,
@@ -768,7 +841,7 @@ class _CashbookState extends State<Cashbook> {
                                                       Expanded(
                                                         flex: 2,
                                                         child: Container(
-                                                          height: 60,
+                                                         
                                                           color: Colors.white,
                                                           child: Column(
                                                             mainAxisAlignment:
@@ -778,15 +851,49 @@ class _CashbookState extends State<Cashbook> {
                                                               const SizedBox(
                                                                 height: 12,
                                                               ),
-                                                              Text(
-                                                                formattedTimestamp1
-                                                                    .toString(),
-                                                                style: const TextStyle(
-                                                                    color: Colors
-                                                                        .grey,
-                                                                    fontSize:
-                                                                        11),
-                                                              ),
+                                                              // Text(
+                                                              //   formattedTimestamp1
+                                                              //       .toString(),
+                                                              //   style: const TextStyle(
+                                                              //       color: Colors
+                                                              //           .grey,
+                                                              //       fontSize:
+                                                              //           11),
+                                                              // ),
+                                                                transaction1![
+                                                                          'details'] ==
+                                                                      null
+                                                                  ? Column( crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .start,
+                                                                      children: [
+                                                                        Text(
+                                                                          formattedTimestamp1,
+                                                                          style: const TextStyle(
+                                                                              color: Colors.grey,
+                                                                              fontSize: 11),
+                                                                        ),
+                                                                      ],
+                                                                    )
+                                                                  : Column( crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .start,
+                                                                      children: [
+                                                                        Text(
+                                                                          formattedTimestamp1
+                                                                              .toString(),
+                                                                          style: const TextStyle(
+                                                                              color: Colors.grey,
+                                                                              fontSize: 11),
+                                                                        ),
+                                                                        Text(
+                                                                          '${transaction1['details']}',
+                                                                          style: const TextStyle(
+                                                                              color: Colors.grey,
+                                                                              fontSize: 11),
+                                                                        )
+                                                                      ],
+                                                                    ),
                                                               Padding(
                                                                 padding: const EdgeInsets
                                                                     .symmetric(
@@ -808,7 +915,7 @@ class _CashbookState extends State<Cashbook> {
                                                       Expanded(
                                                         flex: 1,
                                                         child: Container(
-                                                          height: 60,
+                                                         
                                                           color: Colors
                                                               .transparent,
                                                           child: Center(
@@ -848,7 +955,9 @@ class _CashbookState extends State<Cashbook> {
                     builder: (BuildContext context,
                         AsyncSnapshot<QuerySnapshot> snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const CircularProgressIndicator(); // Show loading indicator while data is being fetched
+                        return const Center(
+                            child:
+                                CircularProgressIndicator()); // Show loading indicator while data is being fetched
                       }
                       if (snapshot.hasError) {
                         return Text('Error: ${snapshot.error}');
@@ -871,7 +980,9 @@ class _CashbookState extends State<Cashbook> {
                             AsyncSnapshot<QuerySnapshot> snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
-                            return const CircularProgressIndicator(); // Show loading indicator while data is being fetched
+                            return const Center(
+                                child:
+                                    CircularProgressIndicator()); // Show loading indicator while data is being fetched
                           }
                           if (snapshot.hasError) {
                             return Text('Error: ${snapshot.error}');
@@ -930,10 +1041,14 @@ class _CashbookState extends State<Cashbook> {
                                                   const EdgeInsets.all(8.0),
                                               child: InkWell(
                                                 onTap: () {
+                                                  print( transaction2![
+                                                                          'details']);
                                                   Navigator.of(context).push(
                                                       MaterialPageRoute(
                                                           builder: ((context) =>
                                                               CashbookEntryDetails(
+                                                                details:
+                                                                    '${transaction2['details'] ?? ''}',
                                                                 docId: docId2,
                                                                 userId: widget
                                                                     .userId,
@@ -966,7 +1081,7 @@ class _CashbookState extends State<Cashbook> {
                                                       Expanded(
                                                         flex: 2,
                                                         child: Container(
-                                                          height: 60,
+                                                         
                                                           color: Colors.white,
                                                           child: Column(
                                                             mainAxisAlignment:
@@ -976,14 +1091,40 @@ class _CashbookState extends State<Cashbook> {
                                                               const SizedBox(
                                                                 height: 12,
                                                               ),
-                                                              Text(
-                                                                formattedTimestamp2,
-                                                                style: const TextStyle(
-                                                                    color: Colors
-                                                                        .grey,
-                                                                    fontSize:
-                                                                        11),
-                                                              ),
+                                                              transaction2![
+                                                                          'details'] ==
+                                                                      null
+                                                                  ? Column( crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .start,
+                                                                      children: [
+                                                                        Text(
+                                                                          formattedTimestamp2,
+                                                                          style: const TextStyle(
+                                                                              color: Colors.grey,
+                                                                              fontSize: 11),
+                                                                        ),
+                                                                      ],
+                                                                    )
+                                                                  : Column( crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .start,
+                                                                      children: [
+                                                                        Text(
+                                                                          formattedTimestamp2
+                                                                              .toString(),
+                                                                          style: const TextStyle(
+                                                                              color: Colors.grey,
+                                                                              fontSize: 11),
+                                                                        ),
+                                                                        Text(
+                                                                          '${transaction2['details']}',
+                                                                          style: const TextStyle(
+                                                                              color: Colors.grey,
+                                                                              fontSize: 11),
+                                                                        )
+                                                                      ],
+                                                                    ),
                                                               Padding(
                                                                 padding: const EdgeInsets
                                                                     .symmetric(

@@ -1,18 +1,16 @@
-import 'dart:io';
-import 'dart:typed_data';
-import 'dart:ui' as ui;
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:khada_book/loginpagee.dart';
 import 'package:khada_book/view/Home/buisinesscard.dart';
 import 'package:khada_book/view/Home/cashbook.dart';
-
+import 'package:khada_book/view/Home/profile.dart';
 
 class More extends StatefulWidget {
-   More({Key? key,required this.uid}) : super(key: key);
-String uid;
+  More({Key? key, required this.uid}) : super(key: key);
+  String uid;
   @override
   State<More> createState() => _MoreState();
 }
@@ -23,81 +21,314 @@ class _MoreState extends State<More> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(automaticallyImplyLeading: false,
-        backgroundColor: Colors.indigo,
-        actions: [  GestureDetector(
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    actionsAlignment: MainAxisAlignment.spaceEvenly,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    title: Center(
-                      child: Column(
-                        children: [
-                          Text(
-                            "Logout",
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                          ),
-                          SizedBox(height: 10),
-                          Text(
-                            "Are You Sure?",
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400),
-                          ),
-                        ],
+    return WillPopScope(onWillPop:_onWillPop,
+      child: Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          backgroundColor: Colors.indigo,
+          actions: [
+            GestureDetector(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      actionsAlignment: MainAxisAlignment.spaceEvenly,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
                       ),
-                    ),
-                    actions: <Widget>[
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                              child: Text(
-                                "Cancel",
-                                style: TextStyle(color: Colors.indigo),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                elevation: 5,
-                                minimumSize: Size(128, 46),
-                                backgroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(6),
+                      title: Center(
+                        child: Column(
+                          children: [
+                            Text(
+                              "Logout",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 20),
+                            ),
+                            SizedBox(height: 10),
+                            Text(
+                              "Are You Sure?",
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.w400),
+                            ),
+                          ],
+                        ),
+                      ),
+                      actions: <Widget>[
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text(
+                                  "Cancel",
+                                  style: TextStyle(color: Colors.indigo),
                                 ),
-                                textStyle: TextStyle(
-                                  color: Colors.indigo,
-                                  fontSize: 15,
+                                style: ElevatedButton.styleFrom(
+                                  elevation: 5,
+                                  minimumSize: Size(128, 46),
+                                  backgroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  textStyle: TextStyle(
+                                    color: Colors.indigo,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 16), // Adjust spacing between buttons
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  await auth1.signOut(context);
+                                  // Handle sign-out and navigation here
+                                },
+                                child: Text(
+                                  "Yes",
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  elevation: 5,
+                                  minimumSize: Size(128, 46),
+                                  backgroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  textStyle: TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 5.0),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration:
+                        BoxDecoration(border: Border.all(color: Colors.white)),
+                    child: Icon(
+                      Icons.logout,
+                      color: Colors.red,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        body: Column(
+          children: [
+            const SizedBox(
+              height: 20,
+            ),
+            ListTile(
+              leading: CircleAvatar(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.white,
+                child: StreamBuilder<DocumentSnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(widget.uid)
+                      .snapshots(),
+                  builder: (BuildContext context,
+                      AsyncSnapshot<DocumentSnapshot> snapshot) {
+                    if (snapshot.hasError) {
+                      return Text('Error: ${snapshot.error}');
+                    }
+      
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Text("");
+                    }
+      
+                    // Extracting data from snapshot
+                    var userData = snapshot.data!.data() as Map<String, dynamic>?;
+                    ;
+                    var businessName = userData!['businessName'];
+      
+                    return businessName == null
+                        ? Container()
+                        : CircleAvatar(
+                            foregroundColor: Colors.white,
+                            backgroundColor: Colors.indigo,
+                            child: Text('${businessName.substring(0, 1)}'));
+                  },
+                ),
+              ),
+              // title: const Text(
+              //   "  My Business",
+              //   style: TextStyle(fontSize: 17),
+              // ),
+              title: StreamBuilder<DocumentSnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(widget.uid)
+                    .snapshots(),
+                builder: (BuildContext context,
+                    AsyncSnapshot<DocumentSnapshot> snapshot) {
+                  if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  }
+      
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Text("");
+                  }
+      
+                  // Extracting data from snapshot
+                  var userData = snapshot.data!.data() as Map<String, dynamic>?;
+                  ;
+                  var businessName = userData!['businessName'];
+      
+                  return businessName == null
+                      ? Container()
+                      : Text('$businessName');
+                },
+              ),
+              trailing: InkWell(
+                onTap: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: ((context) => ProfileScreen(
+                            uid: widget.uid,
+                          ))));
+                },
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
+                  decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.indigo,
+                      ),
+                      borderRadius: BorderRadius.circular(5)),
+                  child: const Text(
+                    "Edit",
+                    style: TextStyle(color: Colors.indigo),
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
+              child: Container(
+                height: 5,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10.0),
+                  color: const Color.fromARGB(255, 231, 228, 228),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                color: const Color.fromARGB(255, 231, 228, 228),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 15.0,
+                  ),
+                  child: Column(
+                    children: [
+                      const SizedBox(
+                        height: 50,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          InkWell(
+                            onTap: () {
+                              // _showBottomSheet(context);
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => BuisinessCard(
+                                        userid: widget.uid,
+                                      )));
+                            },
+                            child: Card(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5)),
+                              child: Container(
+                                width: 120,
+                                height: 145,
+                                decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(5)),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    CircleAvatar(
+                                      backgroundColor: Colors.green[50],
+                                      radius: 28,
+                                      child: const FaIcon(
+                                        FontAwesomeIcons.idCard,
+                                        color: Colors.green,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      height: 10,
+                                    ),
+                                    const Text(
+                                      "Business\n   Card",
+                                      style:
+                                          TextStyle(fontWeight: FontWeight.bold),
+                                    )
+                                  ],
                                 ),
                               ),
                             ),
                           ),
-                          SizedBox(width: 16), // Adjust spacing between buttons
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: () async {
-                                await auth1.signOut(context);
-                                // Handle sign-out and navigation here
-                              },
-                              child: Text(
-                                "Yes",
-                                style: TextStyle(color: Colors.red),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                elevation: 5,
-                                minimumSize: Size(128, 46),
-                                backgroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                textStyle: TextStyle(
-                                  color: Colors.red,
-                                  fontSize: 15,
+                          InkWell(
+                            onTap: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => Cashbook(
+                                      customerId: '', userId: widget.uid)));
+                            },
+                            child: Card(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5)),
+                              child: Container(
+                                width: 120,
+                                height: 145,
+                                decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(5)),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    CircleAvatar(
+                                        backgroundColor: Colors.blue[50],
+                                        radius: 28,
+                                        child: Container(
+                                            decoration: BoxDecoration(
+                                                border: Border.all(
+                                                    color: Colors.blue,
+                                                    width: 2)),
+                                            child: const Icon(
+                                              Icons.currency_rupee_outlined,
+                                              color: Colors.blue,
+                                            ))),
+                                    const SizedBox(
+                                      height: 10,
+                                    ),
+                                    const Text(
+                                      "Cashbook",
+                                      style:
+                                          TextStyle(fontWeight: FontWeight.bold),
+                                    )
+                                  ],
                                 ),
                               ),
                             ),
@@ -105,170 +336,12 @@ class _MoreState extends State<More> {
                         ],
                       ),
                     ],
-                  );
-                },
-              );
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(6),
-                
-             
-              ),
-              child: Icon(
-                Icons.logout,
-                color: Colors.black,
-                size: 20,
-              ),
-            ),
-          ),
-],
-      ),
-      body: Column(
-        children: [
-          const SizedBox(
-            height: 20,
-          ),
-          ListTile(
-            leading: const CircleAvatar(
-              foregroundColor: Colors.white,
-              backgroundColor: Colors.indigo,
-              child: Text("M"),
-            ),
-            title: const Text(
-              "  My Business",
-              style: TextStyle(fontSize: 17),
-            ),
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
-              decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.indigo,
                   ),
-                  borderRadius: BorderRadius.circular(5)),
-              child: const Text(
-                "Edit",
-                style: TextStyle(color: Colors.indigo),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
-            child: Container(
-              height: 5,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10.0),
-                color: const Color.fromARGB(255, 231, 228, 228),
-              ),
-            ),
-          ),
-          Expanded(
-            child: Container(
-              width: MediaQuery.of(context).size.width,
-              color: const Color.fromARGB(255, 231, 228, 228),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 15.0,
-                ),
-                child: Column(
-                  children: [
-                    const SizedBox(
-                      height: 50,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        InkWell(
-                          onTap: () {
-                            // _showBottomSheet(context);
-                            Navigator.of(context).push(MaterialPageRoute(builder: (context)=>BuisinessCard(userid: widget.uid,)));
-                          },
-                          child: Card(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5)),
-                            child: Container(
-                              width: 120,
-                              height: 145,
-                              decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(5)),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  CircleAvatar(
-                                    backgroundColor: Colors.green[50],
-                                    radius: 28,
-                                    child: const FaIcon(
-                                      FontAwesomeIcons.idCard,
-                                      color: Colors.green,
-                                    ),
-                                  ),
-                                  const SizedBox(
-                                    height: 10,
-                                  ),
-                                  const Text(
-                                    "Business\n   Card",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        InkWell(
-                          onTap: () {
-                            Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) =>  Cashbook(customerId: '',
-                                userId: widget.uid)));
-                          },
-                          child: Card(
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5)),
-                            child: Container(
-                              width: 120,
-                              height: 145,
-                              decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(5)),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  CircleAvatar(
-                                      backgroundColor: Colors.blue[50],
-                                      radius: 28,
-                                      child: Container(
-                                          decoration: BoxDecoration(
-                                              border: Border.all(
-                                                  color: Colors.blue,
-                                                  width: 2)),
-                                          child: const Icon(
-                                            Icons.currency_rupee_outlined,
-                                            color: Colors.blue,
-                                          ))),
-                                  const SizedBox(
-                                    height: 10,
-                                  ),
-                                  const Text(
-                                    "Cashbook",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    
-                  ],
                 ),
               ),
             ),
-          ),
-                ],
+          ],
+        ),
       ),
     );
   }
@@ -279,8 +352,7 @@ class _MoreState extends State<More> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
       context: context,
       builder: (BuildContext context) {
-        return
-         Container(
+        return Container(
           color: Colors.white,
           height: 350,
           padding: const EdgeInsets.all(16),
@@ -451,6 +523,27 @@ class _MoreState extends State<More> {
       ),
     );
   }
+   Future<bool> _onWillPop() async {
+    return (await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Are you sure?'),
+            content: Text('Do you want to exit the app?'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text('No'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text('Yes'),
+              ),
+            ],
+          ),
+        )) ??
+        false;
+  }
+
 
   //   Future<Uint8List> _captureWidgetToImage() async {
   //   RenderRepaintBoundary boundary =
@@ -465,7 +558,7 @@ class _MoreState extends State<More> {
 //     if (boundary != null) {
 //       ui.Image image = await boundary.toImage(pixelRatio: MediaQuery.of(context).devicePixelRatio);
 //       ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      
+
 //       final Directory? directory = await getExternalStorageDirectory();
 //       if (directory != null) {
 //         final String directoryPath = directory.path;
@@ -476,7 +569,7 @@ class _MoreState extends State<More> {
 //       } else {
 //         throw Exception('External storage directory is null');
 //       }
-      
+
 //       return byteData.buffer.asUint8List();
 //     } else {
 //       throw Exception('RenderRepaintBoundary not found');

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:khada_book/loginpage.dart';
 import 'package:khada_book/loginpagee.dart';
@@ -37,43 +38,67 @@ class Authentication {
   //     );
   //   }
   // }
- Future<void> loginUser(BuildContext context, String email, String password) async {
-  try {
-    final UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
-
-    // Save user login state using shared preferences
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setBool('isLoggedIn', true);
-    prefs.setString('userUid', userCredential.user!.uid);
-
-    // Retrieve additional user data from Firestore using a query
-    QuerySnapshot userSnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .where('email', isEqualTo: email) // Assuming 'email' is a field in your user documents
-        .limit(1)
-        .get();
-
-    if (userSnapshot.docs.isNotEmpty) {
-      // Get the document ID of the first document in the result
-      String documentId = userSnapshot.docs[0].id;
-print('${documentId}===]]');
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.green,
-          content: Text('Login successful!', style: TextStyle(color: Colors.white)),
-        ),
+  Future<void> loginUser(
+      BuildContext context, String email, String password) async {
+    try {
+            // Show attractive loading indicator while waiting for authentication and data retrieval
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Center(
+            child: SpinKitThreeBounce(
+              color: Colors.blue.shade900,  // Choose your desired color
+              size: 50.0,  // Adjust the size of the spinner
+            ),
+          );
+        },
+      );
+      final UserCredential userCredential =
+          await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
       );
 
-      // Navigate to home screen on successful login
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => BasicBottomNavBar(uid: documentId)),
-      );}
+      // Save user login state using shared preferences
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setBool('isLoggedIn', true);
+      prefs.setString('userUid', userCredential.user!.uid);
+
+      // Retrieve additional user data from Firestore using a query
+      QuerySnapshot userSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email',
+              isEqualTo:
+                  email) // Assuming 'email' is a field in your user documents
+          .limit(1)
+          .get();
+
+      if (userSnapshot.docs.isNotEmpty) {
+        // Get the document ID of the first document in the result
+        String documentId = userSnapshot.docs[0].id;
+         // Dismiss loading indicator
+        Navigator.of(context, rootNavigator: true).pop();
+        print('${documentId}===]]');
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.green,
+            content: Text('Login successful!',
+                style: TextStyle(color: Colors.white)),
+          ),
+        );
+
+        // Navigate to home screen on successful login
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) => BasicBottomNavBar(uid: documentId)),
+        );
+      }
     } catch (e) {
+        // Dismiss loading indicator
+      Navigator.of(context, rootNavigator: true).pop();
       String errorMessage = 'Login Failed. Please try again.';
 
       // Handle specific error cases
@@ -83,9 +108,11 @@ print('${documentId}===]]');
         } else if (e.code == 'wrong-password') {
           errorMessage = 'Wrong password provided for that user.';
         } else if (e.code == 'invalid-email') {
-          errorMessage = 'Invalid email format. Please check your email address.';
+          errorMessage =
+              'Invalid email format. Please check your email address.';
         } else if (e.code == 'network-request-failed') {
-          errorMessage = 'Network error. Please check your internet connection.';
+          errorMessage =
+              'Network error. Please check your internet connection.';
         }
       }
 
@@ -102,14 +129,16 @@ print('${documentId}===]]');
   Future<void> signInWithGoogle(BuildContext context) async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      final GoogleSignInAuthentication googleAuth = await googleUser!.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser!.authentication;
 
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      final UserCredential userCredential = await _auth.signInWithCredential(credential);
+      final UserCredential userCredential =
+          await _auth.signInWithCredential(credential);
 
       // Save user login state using shared preferences
       final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -119,7 +148,10 @@ print('${documentId}===]]');
       // Navigate to home screen on successful login
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => BasicBottomNavBar(uid: 'bhJcZF5f8NPTRd3Qzw32',)),
+        MaterialPageRoute(
+            builder: (context) => BasicBottomNavBar(
+                  uid: 'bhJcZF5f8NPTRd3Qzw32',
+                )),
       );
     } catch (e) {
       // Handle login failure

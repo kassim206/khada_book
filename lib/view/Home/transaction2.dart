@@ -100,19 +100,29 @@ class _TransactionsState extends State<Transactions> {
           backgroundColor: Colors.indigo,
           foregroundColor: Colors.white,
           title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              CircleAvatar(
-                  backgroundColor:
-                      Color((Random().nextDouble() * 0xFFFFFF).toInt() << 0)
-                          .withOpacity(1.0),
-                  child: Text(
-                    widget.name.substring(0, 1),
-                    style: const TextStyle(color: Colors.white),
-                  )),
-              Text(
-                "  ${widget.name}",
-                style: const TextStyle(fontSize: 14),
+              Row(
+                children: [
+                  CircleAvatar(
+                      backgroundColor:
+                          Color((Random().nextDouble() * 0xFFFFFF).toInt() << 0)
+                              .withOpacity(1.0),
+                      child: Text(
+                        widget.name.substring(0, 1),
+                        style: const TextStyle(color: Colors.white),
+                      )),
+                  Text(
+                    "  ${widget.name}",
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                ],
               ),
+              InkWell(
+                  onTap: () {
+                    _makePhoneCall(widget.number);
+                  },
+                  child: Icon(Icons.call))
             ],
           ),
           actions: const [
@@ -123,12 +133,12 @@ class _TransactionsState extends State<Transactions> {
         ),
         body: Column(children: [
           Container(
-            color: Colors.indigo.shade600,
+            color: Colors.indigo,
             width: double.infinity,
-            height: 60,
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Container(
+                padding: const EdgeInsets.all(8.0),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(10),
@@ -415,6 +425,8 @@ class _TransactionsState extends State<Transactions> {
                                                     MaterialPageRoute(
                                                         builder: (context) =>
                                                             EntryDetails(
+                                                              details:
+                                                                  '${transaction1['details'] ?? ''}',
                                                               userId:
                                                                   widget.userId,
                                                               Customerid: widget
@@ -451,7 +463,6 @@ class _TransactionsState extends State<Transactions> {
                                                     Expanded(
                                                       flex: 2,
                                                       child: Container(
-                                                        height: 60,
                                                         color: Colors.white,
                                                         child: Column(
                                                           mainAxisAlignment:
@@ -459,16 +470,45 @@ class _TransactionsState extends State<Transactions> {
                                                                   .center,
                                                           children: [
                                                             const SizedBox(
-                                                              height: 12,
+                                                              height: 25,
                                                             ),
-                                                            Text(
-                                                              formattedTimestamp1
-                                                                  .toString(),
-                                                              style: const TextStyle(
-                                                                  color: Colors
-                                                                      .grey,
-                                                                  fontSize: 11),
-                                                            ),
+                                                            transaction1![
+                                                                        'details'] ==
+                                                                    null
+                                                                ? Column(
+                                                                    children: [
+                                                                      Text(
+                                                                        formattedTimestamp1
+                                                                            .toString(),
+                                                                        style: const TextStyle(
+                                                                            color:
+                                                                                Colors.grey,
+                                                                            fontSize: 11),
+                                                                      ),
+                                                                    ],
+                                                                  )
+                                                                : Column(
+                                                                    crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .start,
+                                                                    children: [
+                                                                      Text(
+                                                                        formattedTimestamp1
+                                                                            .toString(),
+                                                                        style: const TextStyle(
+                                                                            color:
+                                                                                Colors.grey,
+                                                                            fontSize: 11),
+                                                                      ),
+                                                                      Text(
+                                                                        '${transaction1['details']}',
+                                                                        style: const TextStyle(
+                                                                            color:
+                                                                                Colors.grey,
+                                                                            fontSize: 11),
+                                                                      )
+                                                                    ],
+                                                                  ),
                                                             Padding(
                                                               padding:
                                                                   const EdgeInsets
@@ -491,7 +531,6 @@ class _TransactionsState extends State<Transactions> {
                                                     Expanded(
                                                       flex: 1,
                                                       child: Container(
-                                                        height: 60,
                                                         color:
                                                             Colors.transparent,
                                                         child: Center(
@@ -632,6 +671,8 @@ class _TransactionsState extends State<Transactions> {
                                                     MaterialPageRoute(
                                                         builder: (context) =>
                                                             EntryDetails(
+                                                              details:
+                                                                  '${transaction2['details'] ?? ''}',
                                                               userId:
                                                                   widget.userId,
                                                               Customerid: widget
@@ -668,7 +709,6 @@ class _TransactionsState extends State<Transactions> {
                                                     Expanded(
                                                       flex: 2,
                                                       child: Container(
-                                                        height: 60,
                                                         color: Colors.white,
                                                         child: Column(
                                                           mainAxisAlignment:
@@ -678,13 +718,40 @@ class _TransactionsState extends State<Transactions> {
                                                             const SizedBox(
                                                               height: 12,
                                                             ),
-                                                            Text(
-                                                              formattedTimestamp2,
-                                                              style: const TextStyle(
-                                                                  color: Colors
-                                                                      .grey,
-                                                                  fontSize: 11),
-                                                            ),
+                                                            transaction2![
+                                                                        'details'] ==
+                                                                    null
+                                                                ? Column(
+                                                                    children: [
+                                                                      Text(
+                                                                        formattedTimestamp2,
+                                                                        style: const TextStyle(
+                                                                            color:
+                                                                                Colors.grey,
+                                                                            fontSize: 11),
+                                                                      ),
+                                                                    ],
+                                                                  )
+                                                                : Column(
+                                                                    crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .start,
+                                                                    children: [
+                                                                      Text(
+                                                                        formattedTimestamp2,
+                                                                        style: const TextStyle(
+                                                                            color:
+                                                                                Colors.grey,
+                                                                            fontSize: 11),
+                                                                      ),
+                                                                      Text(
+                                                                          transaction2[
+                                                                              'details'],
+                                                                          style: const TextStyle(
+                                                                              color: Colors.grey,
+                                                                              fontSize: 11))
+                                                                    ],
+                                                                  ),
                                                             Padding(
                                                               padding:
                                                                   const EdgeInsets
@@ -707,7 +774,6 @@ class _TransactionsState extends State<Transactions> {
                                                     Expanded(
                                                       flex: 1,
                                                       child: Container(
-                                                        height: 60,
                                                         color:
                                                             Colors.transparent,
                                                         child: Center(
@@ -741,5 +807,14 @@ class _TransactionsState extends State<Transactions> {
         ]),
       ),
     );
+  }
+
+  void _makePhoneCall(String phoneNumber) async {
+    final url = 'tel:$phoneNumber';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 }

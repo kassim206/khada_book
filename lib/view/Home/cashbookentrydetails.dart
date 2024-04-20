@@ -15,11 +15,12 @@ class CashbookEntryDetails extends StatefulWidget {
   String Amount;
   Color color;
   String date;
-
+  String details;
   String docId;
   String userId;
   CashbookEntryDetails({
     super.key,
+    required this.details,
     required this.userId,
     required this.docId,
     required this.date,
@@ -332,6 +333,8 @@ class _CashbookEntryDetailsState extends State<CashbookEntryDetails> {
                               onTap: () {
                                 Navigator.of(context).push(MaterialPageRoute(
                                     builder: ((context) => CashbookEditEntry(
+                                          details: widget.details,
+                                          date: widget.date,
                                           userId: widget.userId,
                                           amount: "${widget.Amount}",
                                           color: widget.color,

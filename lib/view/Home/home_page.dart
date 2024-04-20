@@ -7,6 +7,7 @@ import 'package:flutter_scrolling_fab_animated/flutter_scrolling_fab_animated.da
 import 'package:contacts_service/contacts_service.dart';
 import 'package:intl/intl.dart';
 import 'package:khada_book/view/Home/cashbook.dart';
+import 'package:khada_book/view/Home/editbuisinessname.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:khada_book/view/Home/transaction2.dart';
 // import 'package:timeago/timeago.dart' as timeago;
@@ -37,7 +38,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance!.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       // Initialize _scaffoldMessengerState after the first frame has been built
       _scaffoldMessengerState = ScaffoldMessenger.of(context);
     });
@@ -110,23 +111,94 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
       key: _scaffoldMessengerKey,
-      child: WillPopScope(onWillPop:_onWillPop,
+      child: WillPopScope(
+        onWillPop: _onWillPop,
         child: Scaffold(
           appBar: AppBar(
             automaticallyImplyLeading: false,
-            title: const Row(
+            title: Row(
               children: [
-                Icon(
-                  Icons.book,
-                  color: Colors.white,
-                ),
-                Text(
-                  ' My Buisiness',
-                  style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white),
-                ),
+                StreamBuilder<DocumentSnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(widget.uid)
+                        .snapshots(),
+                    builder: (BuildContext context,
+                        AsyncSnapshot<DocumentSnapshot> snapshot) {
+                      if (snapshot.hasError) {
+                        return Text('Error: ${snapshot.error}');
+                      }
+
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const CircularProgressIndicator();
+                      }
+
+                      // Extracting data from snapshot
+                      var userData =
+                          snapshot.data!.data() as Map<String, dynamic>?;
+                      ;
+                      var businessName = userData!['businessName'];
+
+                      return businessName == null
+                          ? Container(
+                              child: InkWell(
+                                onTap: () {
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: ((context) =>
+                                          EditBusinessNamePage(
+                                            userId: widget.uid,
+                                          ))));
+                                },
+                                child: Container(
+                                  height: 40,
+                                  width: 120,
+                                  decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: Colors.white,
+                                      ),
+                                      borderRadius: BorderRadius.circular(5)),
+                                  child: const Center(
+                                    child: Text(
+                                      "Add Buisiness Name",
+                                      style: TextStyle(
+                                          color: Colors.white, fontSize: 10),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                          : InkWell(
+                              onTap: () {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) => EditBusinessNamePage(
+                                        userId: widget.uid)));
+                              },
+                              child: Container(
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.book,
+                                      color: Colors.white,
+                                    ),
+                                    Container(
+                                      child: Text('${businessName}',
+                                          style: const TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white)),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                    }),
+                // Text(
+                //   ' My Buisiness',
+                //   style: TextStyle(
+                //       fontSize: 14,
+                //       fontWeight: FontWeight.bold,
+                //       color: Colors.white),
+                // ),
                 // Icon(
                 //   Icons.keyboard_arrow_down,
                 //   color: Colors.white,
@@ -210,31 +282,31 @@ class _HomePageState extends State<HomePage> {
                                       if (snapshot.hasError) {
                                         return Text('Error: ${snapshot.error}');
                                       }
-        
+
                                       // Calculate total net amount for all customers
                                       int totalNetAmount = 0;
-        
+
                                       // Iterate through each document in the snapshot
                                       for (DocumentSnapshot customerSnapshot
                                           in snapshot.data!.docs) {
                                         // Get the customer document data
-                                        var customerData = customerSnapshot.data()
-                                            as Map<String, dynamic>;
-        
+                                        var customerData = customerSnapshot
+                                            .data() as Map<String, dynamic>;
+
                                         // Check if the document contains the netAmount
                                         if (customerData
                                             .containsKey('netAmount')) {
                                           int netAmount =
                                               customerData['netAmount'];
                                           print('${netAmount}');
-        
+
                                           // Add the net amount to the total
                                           if (netAmount < 0) {
                                             totalNetAmount += netAmount;
                                           }
                                         }
                                       }
-        
+
                                       // Display the total net amount
                                       return totalNetAmount == 0
                                           ? const Text("₹ 0")
@@ -242,13 +314,15 @@ class _HomePageState extends State<HomePage> {
                                               ? Text(
                                                   '₹ ${totalNetAmount.abs()}',
                                                   style: const TextStyle(
-                                                      fontWeight: FontWeight.bold,
+                                                      fontWeight:
+                                                          FontWeight.bold,
                                                       color: Colors.green),
                                                 )
                                               : Text(
                                                   '₹ ${totalNetAmount}',
                                                   style: const TextStyle(
-                                                      fontWeight: FontWeight.bold,
+                                                      fontWeight:
+                                                          FontWeight.bold,
                                                       color: Colors.red),
                                                 );
                                     },
@@ -277,31 +351,31 @@ class _HomePageState extends State<HomePage> {
                                       if (snapshot.hasError) {
                                         return Text('Error: ${snapshot.error}');
                                       }
-        
+
                                       // Calculate total net amount for all customers
                                       int totalNetAmount = 0;
-        
+
                                       // Iterate through each document in the snapshot
                                       for (DocumentSnapshot customerSnapshot
                                           in snapshot.data!.docs) {
                                         // Get the customer document data
-                                        var customerData = customerSnapshot.data()
-                                            as Map<String, dynamic>;
-        
+                                        var customerData = customerSnapshot
+                                            .data() as Map<String, dynamic>;
+
                                         // Check if the document contains the netAmount
                                         if (customerData
                                             .containsKey('netAmount')) {
                                           int netAmount =
                                               customerData['netAmount'];
                                           print('${netAmount}');
-        
+
                                           // Add the net amount to the total
                                           if (netAmount > 0) {
                                             totalNetAmount += netAmount;
                                           }
                                         }
                                       }
-        
+
                                       // Display the total net amount
                                       return totalNetAmount == 0
                                           ? const Text("₹ 0")
@@ -309,13 +383,15 @@ class _HomePageState extends State<HomePage> {
                                               ? Text(
                                                   '₹ ${totalNetAmount.abs()}',
                                                   style: const TextStyle(
-                                                      fontWeight: FontWeight.bold,
+                                                      fontWeight:
+                                                          FontWeight.bold,
                                                       color: Colors.green),
                                                 )
                                               : Text(
                                                   '₹ ${totalNetAmount}',
                                                   style: const TextStyle(
-                                                      fontWeight: FontWeight.bold,
+                                                      fontWeight:
+                                                          FontWeight.bold,
                                                       color: Colors.red),
                                                 );
                                     },
@@ -349,7 +425,7 @@ class _HomePageState extends State<HomePage> {
                       ],
                     ),
                   ),
-        
+
                   const SizedBox(
                     height: 5,
                   ),
@@ -443,14 +519,14 @@ class _HomePageState extends State<HomePage> {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const CircularProgressIndicator(); // Show loading indicator while data is being fetched
                       }
-        
+
                       if (snapshot.hasError) {
                         return Text('Error: ${snapshot.error}');
                       }
-        
+
                       // Extract documents from snapshot
                       var documents = snapshot.data!.docs;
-        
+
                       return ListView.builder(
                         controller: ScrollController(),
                         padding: const EdgeInsets.all(0),
@@ -464,15 +540,16 @@ class _HomePageState extends State<HomePage> {
                           String customerId = documents[index].id;
                           DateTime? createDate =
                               selectedContact?['createDate'] != null
-                                  ? (selectedContact?['createDate'] as Timestamp)
+                                  ? (selectedContact?['createDate']
+                                          as Timestamp)
                                       .toDate()
                                   : null;
-        
+
                           // Formatting the DateTime object to a string in the desired format
                           String formattedCreateDate = createDate != null
                               ? DateFormat('dd/MM/yy HH:mm').format(createDate)
                               : '';
-        
+
                           return Column(
                             children: [
                               const SizedBox(
@@ -491,7 +568,8 @@ class _HomePageState extends State<HomePage> {
                                           .then((_) {
                                         print("Document successfully deleted!");
                                       }).catchError((error) {
-                                        print("Error deleting document: $error");
+                                        print(
+                                            "Error deleting document: $error");
                                       });
                                     },
                                     onTap: () {
@@ -500,9 +578,10 @@ class _HomePageState extends State<HomePage> {
                                           builder: (context) => Transactions(
                                             userId: widget.uid,
                                             customerId: customerId,
-                                            name: selectedContact?['userName'] ??
-                                                "" ??
-                                                "",
+                                            name:
+                                                selectedContact?['userName'] ??
+                                                    "" ??
+                                                    "",
                                             number: selectedContact?[
                                                     'contactNumber'] ??
                                                 "" ??
@@ -532,7 +611,8 @@ class _HomePageState extends State<HomePage> {
                                           : null, // No background color if avatar image is available
                                       child: selectedContact?['avatar'] == null
                                           ? Text(
-                                              selectedContact?['userName']?[0] ??
+                                              selectedContact?['userName']
+                                                      ?[0] ??
                                                   '', // Display first letter of the user's name
                                               style: const TextStyle(
                                                   fontSize: 18,
@@ -541,14 +621,13 @@ class _HomePageState extends State<HomePage> {
                                             )
                                           : null, // No child if avatar image is available
                                     ),
-        
+
                                     // trailing: const Text(
                                     //   "₹ 10",
                                     //   style: TextStyle(
                                     //       fontSize: 13, color: Colors.green),
                                     // ),
-                                    trailing:
-                                     StreamBuilder<DocumentSnapshot>(
+                                    trailing: StreamBuilder<DocumentSnapshot>(
                                       stream: FirebaseFirestore.instance
                                           .collection('users')
                                           .doc(widget.uid)
@@ -563,13 +642,14 @@ class _HomePageState extends State<HomePage> {
                                           return const CircularProgressIndicator();
                                         }
                                         if (snapshot.hasError) {
-                                          return Text('Error: ${snapshot.error}');
+                                          return Text(
+                                              'Error: ${snapshot.error}');
                                         }
-        
+
                                         // Get the customer document data
                                         var customerData = snapshot.data!.data()
                                             as Map<String, dynamic>?;
-        
+
                                         // Check if the document exists and contains the netAmount
                                         if (customerData != null &&
                                             customerData
@@ -599,8 +679,8 @@ class _HomePageState extends State<HomePage> {
                                         }
                                       },
                                     ),
-                                    title:
-                                        Text(selectedContact?['userName'] ?? ""),
+                                    title: Text(
+                                        selectedContact?['userName'] ?? ""),
                                     subtitle: Text(
                                       formattedCreateDate,
                                       style: const TextStyle(
@@ -656,6 +736,17 @@ class _HomePageState extends State<HomePage> {
                     }).toList();
                   });
                 }
+                // void filterContacts(String query) {
+                //   setState(() {
+                //     filteredContacts = contacts.where((contact) {
+                //       final displayName = contact.displayName?.toLowerCase() ?? '';
+                //       final phoneNumber = _getPhoneNumber(contact)?.toLowerCase() ?? '';
+                //       final searchLower = query.toLowerCase();
+
+                //       return displayName.contains(searchLower) || phoneNumber.contains(searchLower);
+                //     }).toList();
+                //   });
+                // }}
 
                 return Scaffold(
                   appBar: AppBar(
@@ -824,24 +915,22 @@ class _HomePageState extends State<HomePage> {
     return (await showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: Text('Are you sure?'),
-            content: Text('Do you want to exit the app?'),
+            title: const Text('Are you sure?'),
+            content: const Text('Do you want to exit the app?'),
             actions: <Widget>[
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: Text('No'),
+                child: const Text('No'),
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                child: Text('Yes'),
+                child: const Text('Yes'),
               ),
             ],
           ),
         )) ??
         false;
   }
-
-
 }
 
 Color _generateRandomColor() {

@@ -1,13 +1,17 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class CashbookReport extends StatefulWidget {
-  const CashbookReport({super.key});
+  String userid;
+  CashbookReport({super.key, required this.userid});
 
   @override
   State<CashbookReport> createState() => _CashbookReportState();
 }
 
 class _CashbookReportState extends State<CashbookReport> {
+  DateTime? latestDateTime;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -167,10 +171,11 @@ class _CashbookReportState extends State<CashbookReport> {
                       "Date",
                       style: TextStyle(fontSize: 11),
                     ),
-                    Text(
-                      "DAILY BALANCE",
-                      style: TextStyle(fontSize: 11),
-                    ),
+                    // Text(
+                    //   "DAILY BALANCE",
+                    //   style: TextStyle(fontSize: 11),
+                    // ),
+                    SizedBox(),
                     Text(
                       "TOTAL BALANCE",
                       style: TextStyle(fontSize: 11),
@@ -178,47 +183,146 @@ class _CashbookReportState extends State<CashbookReport> {
                   ],
                 ),
               )),
-          Expanded(
-            child: ListView.builder(itemCount: 10,shrinkWrap: true,controller: ScrollController(),
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 5.0),
-                  child: Card(
-                    elevation: 0,
-                    child: Container(
-                        height: 50,
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Color.fromARGB(255, 228, 227, 227),
-                              spreadRadius: 2,
-                              blurRadius: 5,
-                              offset: Offset(0, 2), // changes position of shadow
-                            ),
-                          ],
-                        ),
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text("31 Mar"),
-                              Text("₹ 0"),
-                              Text(
-                                "₹ 50 >",
-                                style: TextStyle(
-                                    color: Colors.green,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                            ],
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+                .collection('users')
+                .doc(widget.userid)
+                .collection('netAmounts')
+                .orderBy('timestamp',
+                    descending: true) // Order by timestamp in descending order
+                .snapshots(),
+            builder:
+                (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+              if (snapshot.hasError) {
+                return Text('Error: ${snapshot.error}');
+              }
+
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const CircularProgressIndicator();
+              }
+
+              return Expanded(
+                  child: ListView.builder(
+                itemCount: snapshot.data!.docs.length,
+                shrinkWrap: true,
+                itemBuilder: (context, index) {
+                  var document = snapshot.data!.docs[index];
+                  // Timestamp timestamp = document['timestamp'];
+                  // DateTime dateTime = timestamp.toDate();
+                  // String formattedDateTime =
+                  //     DateFormat('dd MMM HH:mm').format(dateTime);
+                  // double netAmount = document['netAmount'];
+                  Timestamp timestamp = document['timestamp'];
+                  DateTime dateTime = timestamp.toDate();
+                  String formattedDateTime =
+                      DateFormat('dd MMM HH:mm').format(dateTime);
+                  double netAmount = document['netAmount'];
+                  if (latestDateTime == null ||
+                      !isSameDay(dateTime, latestDateTime!)) {
+                    latestDateTime = dateTime; // Update latestDateTime
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                      child: Dismissible(
+                        key: UniqueKey(),
+                        direction: DismissDirection.endToStart,
+                        background: Container(
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.only(right: 20.0),
+                          color: Colors.red,
+                          child: const Icon(
+                            Icons.delete,
+                            color: Colors.white,
                           ),
-                        )),
-                  ),
-                );
-              },
-            ),
+                        ),
+                        confirmDismiss: (direction) async {
+                          return await showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: const Text("Confirm Deletion"),
+                                content: const Text(
+                                    "Are you sure you want to delete this document?"),
+                                actions: <Widget>[
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop(
+                                          false); // Dismiss the dialog and do not delete
+                                    },
+                                    child: const Text("Cancel"),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop(
+                                          true); // Dismiss the dialog and delete
+                                    },
+                                    child: const Text("Delete"),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                        onDismissed: (direction) {
+                          FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(widget.userid)
+                              .collection('netAmounts')
+                              .doc(document.id)
+                              .delete()
+                              .then((_) {
+                            print("Document successfully deleted!");
+                          }).catchError((error) {
+                            print("Error deleting document: $error");
+                          });
+                        },
+                        child: Card(
+                          elevation: 0,
+                          child: Container(
+                            height: 50,
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Color.fromARGB(255, 228, 227, 227),
+                                  spreadRadius: 2,
+                                  blurRadius: 5,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 10.0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  // Display formatted date and time
+                                  Text(formattedDateTime),
+                                  // Display net amount
+                                  Text(
+                                    '₹ ${netAmount.toInt().abs()}',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: netAmount >= 0
+                                          ? Colors.green
+                                          : Colors.red,
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  } else {
+                    return const SizedBox.shrink(); // Hide the item if netAmount is 0
+                  }
+                },
+              ));
+            },
           )
         ],
       ),
@@ -253,5 +357,9 @@ class _CashbookReportState extends State<CashbookReport> {
         _selectedEndDate = picked;
       });
     }
+  }
+
+  bool isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 }

@@ -32,28 +32,28 @@ class _ViewReportState extends State<ViewReport> {
             style: TextStyle(fontSize: 17),
           ),
         ),
-        bottomNavigationBar: BottomAppBar(
-          elevation: 2,
-          color: Colors.white,
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
-                backgroundColor: Colors.indigo,
-                foregroundColor: Colors.white),
-            onPressed: () {},
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.picture_as_pdf_outlined),
-                SizedBox(
-                  width: 10,
-                ),
-                Text("DOWNLOAD"),
-              ],
-            ),
-          ),
-        ),
+        // bottomNavigationBar: BottomAppBar(
+        //   elevation: 2,
+        //   color: Colors.white,
+        //   child: ElevatedButton(
+        //     style: ElevatedButton.styleFrom(
+        //         shape: RoundedRectangleBorder(
+        //             borderRadius: BorderRadius.circular(8)),
+        //         backgroundColor: Colors.indigo,
+        //         foregroundColor: Colors.white),
+        //     onPressed: () {},
+        //     child: const Row(
+        //       mainAxisAlignment: MainAxisAlignment.center,
+        //       children: [
+        //         Icon(Icons.picture_as_pdf_outlined),
+        //         SizedBox(
+        //           width: 10,
+        //         ),
+        //         Text("DOWNLOAD"),
+        //       ],
+        //     ),
+        //   ),
+        // ),
         body: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           child: SizedBox(
@@ -127,7 +127,7 @@ class _ViewReportState extends State<ViewReport> {
                         height: 12,
                       ),
                       Container(
-                        height: 50,
+                        // height: 50,
                         color: Colors.white,
                         child: TextFormField(
                           decoration: const InputDecoration(
@@ -146,11 +146,12 @@ class _ViewReportState extends State<ViewReport> {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
                 child: Row(
                   // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("Net Balance",
+                    const Text("Net Balance",
                         style: TextStyle(
                             fontSize: 15, fontWeight: FontWeight.bold)),
 
@@ -161,106 +162,179 @@ class _ViewReportState extends State<ViewReport> {
                     //       color: Colors.green,
                     //       fontWeight: FontWeight.bold),
                     // ),
-                    StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance
-                          .collection('users')
-                          .doc(widget.userId)
-                          .collection('totalGaveAmount')
-                          .snapshots(),
-                      builder: (BuildContext context,
-                          AsyncSnapshot<QuerySnapshot> gaveSnapshot) {
-                        if (gaveSnapshot.connectionState ==
+                    // StreamBuilder<QuerySnapshot>(
+                    //   stream: FirebaseFirestore.instance
+                    //       .collection('users')
+                    //       .doc(widget.userId)
+                    //       .collection('totalGaveAmount')
+                    //       .snapshots(),
+                    //   builder: (BuildContext context,
+                    //       AsyncSnapshot<QuerySnapshot> gaveSnapshot) {
+                    //     if (gaveSnapshot.connectionState ==
+                    //         ConnectionState.waiting) {
+                    //       return const Text("");
+                    //     }
+                    //     if (gaveSnapshot.hasError) {
+                    //       return Text('Error: ${gaveSnapshot.error}');
+                    //     }
+                    //     if (!gaveSnapshot.hasData ||
+                    //         gaveSnapshot.data!.docs.isEmpty) {
+                    //       return const Text('');
+                    //     }
+
+                    //     // Calculate total gave amount
+                    //     var totalGaveAmount =
+                    //         gaveSnapshot.data!.docs.fold(0, (sum, doc) {
+                    //       var data = doc.data() as Map<String, dynamic>?;
+                    //       if (data != null && data['totalGaveAmount'] is num) {
+                    //         return sum +
+                    //             (data['totalGaveAmount'] as num).toInt();
+                    //       }
+                    //       return sum;
+                    //     });
+
+                    //     // Now, do the same for 'totalGotAmount' collection
+                    //     return StreamBuilder<QuerySnapshot>(
+                    //       stream: FirebaseFirestore.instance
+                    //           .collection('users')
+                    //           .doc(widget.userId)
+                    //           .collection('totalGotAmount')
+                    //           .snapshots(),
+                    //       builder: (BuildContext context,
+                    //           AsyncSnapshot<QuerySnapshot> gotSnapshot) {
+                    //         if (gotSnapshot.connectionState ==
+                    //             ConnectionState.waiting) {
+                    //           return const Text("");
+                    //         }
+                    //         if (gotSnapshot.hasError) {
+                    //           return Text('Error: ${gotSnapshot.error}');
+                    //         }
+                    //         if (!gotSnapshot.hasData ||
+                    //             gotSnapshot.data!.docs.isEmpty) {
+                    //           return const Text('');
+                    //         }
+
+                    //         // Calculate total got amount
+                    //         var totalGotAmount =
+                    //             gotSnapshot.data!.docs.fold(0, (sum, doc) {
+                    //           var data = doc.data() as Map<String, dynamic>?;
+                    //           if (data != null &&
+                    //               data['totalGotAmount'] is num) {
+                    //             return sum +
+                    //                 (data['totalGotAmount'] as num).toInt();
+                    //           }
+                    //           return sum;
+                    //         });
+
+                    //         // Calculate total sum
+                    //         var totalSum = totalGaveAmount - totalGotAmount;
+
+                    //         // Display the totals
+                    //         return Column(
+                    //           crossAxisAlignment: CrossAxisAlignment.end,
+                    //           children: [
+                    //             Text(
+                    //               '   ${totalSum.abs()}',
+                    //               style: const TextStyle(
+                    //                 fontSize: 15,
+                    //                 fontWeight: FontWeight.bold,
+                    //                 color: Colors.green,
+                    //               ),
+                    //             ),
+                    //             // Text(
+                    //             //   'Total Gave Amount: $totalGaveAmount',
+                    //             //   style: const TextStyle(
+                    //             //     fontSize: 12,
+                    //             //     fontWeight: FontWeight.bold,
+                    //             //     color: Colors.red,
+                    //             //   ),
+                    //             // ),
+                    //             // Text(
+                    //             //   'Total Got Amount: $totalGotAmount',
+                    //             //   style: const TextStyle(
+                    //             //     fontSize: 12,
+                    //             //     fontWeight: FontWeight.bold,
+                    //             //     color: Colors.blue,
+                    //             //   ),
+                    //             // ),
+                    //           ],
+                    //         );
+                    //       },
+                    //     );
+                    //   },
+                    // ),
+                    // StreamBuilder<DocumentSnapshot>(
+                    //   stream: FirebaseFirestore.instance
+                    //       .collection('users')
+                    //       .doc(widget.userId)
+                    //       .snapshots(),
+                    //   builder: (BuildContext context,
+                    //       AsyncSnapshot<DocumentSnapshot> gaveSnapshot) {
+                    //     if (gaveSnapshot.connectionState ==
+                    //         ConnectionState.waiting) {
+                    //       return const CircularProgressIndicator();
+                    //     }
+                    //     if (gaveSnapshot.hasError) {
+                    //       return Text('Error: ${gaveSnapshot.error}');
+                    //     }
+                    //     if (!gaveSnapshot.hasData ||
+                    //         gaveSnapshot.data!.data() == null) {
+                    //       return const Text('');
+                    //     }
+
+                    //     // Access the data from the DocumentSnapshot
+                    //     var userData =
+                    //         gaveSnapshot.data!.data() as Map<String, dynamic>;
+
+                    //     // Calculate total gave amount
+                    //     var totalGaveAmount = 0;
+                    //     var totalGotAmount = 0;
+                    //     if (userData.containsKey('totalGaveAmount') &&
+                    //         userData['totalGaveAmount'] is num) {
+                    //       totalGaveAmount =
+                    //           (userData['totalGaveAmount'] as num).toInt();
+                    //     }
+                    //     if (userData.containsKey('totalGotAmount') &&
+                    //         userData['totalGotAmount'] is num) {
+                    //       totalGotAmount =
+                    //           (userData['totalGotAmount'] as num).toInt();
+                    //     }
+
+                    //     // Display total gave amount
+                    //     return Text(
+                    //       '  ${(totalGaveAmount - totalGotAmount).abs()}',
+                    //       style: const TextStyle(
+                    //           fontSize: 18, fontWeight: FontWeight.bold),
+                    //     );
+                    //   },
+                    // ),
+                    FutureBuilder(
+                      future: Future.wait(
+                          [getTotalGaveAmount(), getTotalGotAmount()]),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
                             ConnectionState.waiting) {
-                          return const Text("");
+                          return Center(
+                            child: SizedBox(
+                              width: 10,
+                              height: 10,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 3,
+                              ),
+                            ),
+                          );
+                        } else if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        } else {
+                          double totalGaveAmt = snapshot.data?[0] ?? 0;
+                          double totalGotAmt = snapshot.data?[1] ?? 0;
+                          double difference = totalGaveAmt - totalGotAmt;
+                          return Text(
+                            '  ${difference.toInt().abs()}',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
+                          );
                         }
-                        if (gaveSnapshot.hasError) {
-                          return Text('Error: ${gaveSnapshot.error}');
-                        }
-                        if (!gaveSnapshot.hasData ||
-                            gaveSnapshot.data!.docs.isEmpty) {
-                          return const Text('');
-                        }
-
-                        // Calculate total gave amount
-                        var totalGaveAmount =
-                            gaveSnapshot.data!.docs.fold(0, (sum, doc) {
-                          var data = doc.data() as Map<String, dynamic>?;
-                          if (data != null && data['totalGaveAmount'] is num) {
-                            return sum +
-                                (data['totalGaveAmount'] as num).toInt();
-                          }
-                          return sum;
-                        });
-
-                        // Now, do the same for 'totalGotAmount' collection
-                        return StreamBuilder<QuerySnapshot>(
-                          stream: FirebaseFirestore.instance
-                              .collection('users')
-                              .doc(widget.userId)
-                              .collection('totalGotAmount')
-                              .snapshots(),
-                          builder: (BuildContext context,
-                              AsyncSnapshot<QuerySnapshot> gotSnapshot) {
-                            if (gotSnapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return const Text("");
-                            }
-                            if (gotSnapshot.hasError) {
-                              return Text('Error: ${gotSnapshot.error}');
-                            }
-                            if (!gotSnapshot.hasData ||
-                                gotSnapshot.data!.docs.isEmpty) {
-                              return const Text(
-                                  '');
-                            }
-
-                            // Calculate total got amount
-                            var totalGotAmount =
-                                gotSnapshot.data!.docs.fold(0, (sum, doc) {
-                              var data = doc.data() as Map<String, dynamic>?;
-                              if (data != null &&
-                                  data['totalGotAmount'] is num) {
-                                return sum +
-                                    (data['totalGotAmount'] as num).toInt();
-                              }
-                              return sum;
-                            });
-
-                            // Calculate total sum
-                            var totalSum = totalGaveAmount - totalGotAmount;
-
-                            // Display the totals
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  '   ${totalSum.abs()}',
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.green,
-                                  ),
-                                ),
-                                // Text(
-                                //   'Total Gave Amount: $totalGaveAmount',
-                                //   style: const TextStyle(
-                                //     fontSize: 12,
-                                //     fontWeight: FontWeight.bold,
-                                //     color: Colors.red,
-                                //   ),
-                                // ),
-                                // Text(
-                                //   'Total Got Amount: $totalGotAmount',
-                                //   style: const TextStyle(
-                                //     fontSize: 12,
-                                //     fontWeight: FontWeight.bold,
-                                //     color: Colors.blue,
-                                //   ),
-                                // ),
-                              ],
-                            );
-                          },
-                        );
                       },
                     ),
                   ],
@@ -297,7 +371,7 @@ class _ViewReportState extends State<ViewReport> {
                       ),
                     ),
                     SizedBox(
-                      height: 40,
+                      // height: 40,
                       width: 100,
                       child: Padding(
                         padding: const EdgeInsets.only(right: 4.0),
@@ -306,47 +380,68 @@ class _ViewReportState extends State<ViewReport> {
                           children: [
                             const Text("YOU GAVE",
                                 style: TextStyle(fontSize: 10)),
-                            StreamBuilder<DocumentSnapshot>(
-                              stream: FirebaseFirestore.instance
-                                  .collection('users')
-                                  .doc(widget.userId)
-                                  .collection('totalGaveAmount')
-                                  .doc('totalGaveAmount')
-                                  .snapshots(),
-                              builder: (BuildContext context,
-                                  AsyncSnapshot<DocumentSnapshot> snapshot) {
+                            // StreamBuilder<DocumentSnapshot>(
+                            //   stream: FirebaseFirestore.instance
+                            //       .collection('users')
+                            //       .doc(widget.userId)
+                            //       .snapshots(),
+                            //   builder: (BuildContext context,
+                            //       AsyncSnapshot<DocumentSnapshot> snapshot) {
+                            //     if (snapshot.connectionState ==
+                            //         ConnectionState.waiting) {
+                            //       return const CircularProgressIndicator();
+                            //     }
+                            //     if (snapshot.hasError) {
+                            //       return Text('Error: ${snapshot.error}');
+                            //     }
+                            //     if (!snapshot.hasData ||
+                            //         !snapshot.data!.exists) {
+                            //       return const Text('');
+                            //     }
+
+                            //     // Extract total got amount from document snapshot
+                            //     var data = snapshot.data!.data() as Map<String,
+                            //         dynamic>?; // Ensure data is cast to the correct type
+                            //     if (data != null) {
+                            //       var totalGaveAmount = data['totalGaveAmount']
+                            //           as num?; // Access the value using the [] operator
+
+                            //       if (totalGaveAmount != null) {
+                            //         return Text(
+                            //           '${totalGaveAmount.toInt()}',
+                            //           style: const TextStyle(
+                            //               fontSize: 12,
+                            //               fontWeight: FontWeight.bold,
+                            //               color: Colors.red),
+                            //         );
+                            //       }
+                            //     }
+
+                            //     return const Text('');
+                            //   },
+                            // ),
+
+                            FutureBuilder<double>(
+                              future: getTotalGaveAmount(),
+                              builder: (context, snapshot) {
                                 if (snapshot.connectionState ==
                                     ConnectionState.waiting) {
-                                  return const Text("");
-                                }
-                                if (snapshot.hasError) {
+                                  return Container(
+                                      height: 10,
+                                      width: 10,
+                                      child: CircularProgressIndicator());
+                                } else if (snapshot.hasError) {
                                   return Text('Error: ${snapshot.error}');
+                                } else {
+                                  double totalGaveAmt = snapshot.data ?? 0;
+                                  return Text(
+                                    '${totalGaveAmt.toInt().abs()}',
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.red),
+                                  );
                                 }
-                                if (!snapshot.hasData ||
-                                    !snapshot.data!.exists) {
-                                  return const Text(
-                                      'Total gave amount not available.');
-                                }
-
-                                // Extract total got amount from document snapshot
-                                var data = snapshot.data!.data() as Map<String,
-                                    dynamic>?; // Ensure data is cast to the correct type
-                                if (data != null) {
-                                  var totalGaveAmount = data['totalGaveAmount']
-                                      as num?; // Access the value using the [] operator
-                                  if (totalGaveAmount != null) {
-                                    return Text(
-                                      '${totalGaveAmount.toInt()}',
-                                      style: const TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.red),
-                                    );
-                                  }
-                                }
-
-                                return const Text(
-                                    'Total got amount not available.');
                               },
                             ),
                           ],
@@ -356,7 +451,7 @@ class _ViewReportState extends State<ViewReport> {
                     Expanded(
                       child: Container(
                         padding: const EdgeInsets.only(right: 10),
-                        height: 40,
+                        // height: 40,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
@@ -367,46 +462,68 @@ class _ViewReportState extends State<ViewReport> {
                             //         fontSize: 12,
                             //         fontWeight: FontWeight.bold,
                             //         color: Colors.green)),
-                            StreamBuilder<DocumentSnapshot>(
-                              stream: FirebaseFirestore.instance
-                                  .collection('users')
-                                  .doc(widget.userId)
-                                  .collection('totalGotAmount')
-                                  .doc('totalGotAmount')
-                                  .snapshots(),
-                              builder: (BuildContext context,
-                                  AsyncSnapshot<DocumentSnapshot> snapshot) {
+                            // StreamBuilder<DocumentSnapshot>(
+                            //   stream: FirebaseFirestore.instance
+                            //       .collection('users')
+                            //       .doc(widget.userId)
+                            //       .snapshots(),
+                            //   builder: (BuildContext context,
+                            //       AsyncSnapshot<DocumentSnapshot> snapshot) {
+                            //     if (snapshot.connectionState ==
+                            //         ConnectionState.waiting) {
+                            //       return const Center(
+                            //           child: CircularProgressIndicator());
+                            //     }
+                            //     if (snapshot.hasError) {
+                            //       return Text('Error: ${snapshot.error}');
+                            //     }
+                            //     if (!snapshot.hasData ||
+                            //         !snapshot.data!.exists) {
+                            //       return const Text('');
+                            //     }
+
+                            //     // Extract total got amount from document snapshot
+                            //     var data = snapshot.data!.data() as Map<String,
+                            //         dynamic>?; // Ensure data is cast to the correct type
+
+                            //     if (data != null) {
+                            //       var totalGotAmount = data['totalGotAmount']
+                            //           as num?; // Access the value using the [] operator
+                            //       if (totalGotAmount != null) {
+                            //         return Text(
+                            //           '${totalGotAmount.toInt()}',
+                            //           style: const TextStyle(
+                            //               fontSize: 12,
+                            //               fontWeight: FontWeight.bold,
+                            //               color: Colors.green),
+                            //         );
+                            //       }
+                            //     }
+
+                            //     return const Text('');
+                            //   },
+                            // ),
+                            FutureBuilder<double>(
+                              future: getTotalGotAmount(),
+                              builder: (context, snapshot) {
                                 if (snapshot.connectionState ==
                                     ConnectionState.waiting) {
-                                  return const Text("");
-                                }
-                                if (snapshot.hasError) {
+                                  return Container(
+                                      height: 10,
+                                      width: 10,
+                                      child: CircularProgressIndicator());
+                                } else if (snapshot.hasError) {
                                   return Text('Error: ${snapshot.error}');
+                                } else {
+                                  double totalGotAmt = snapshot.data ?? 0;
+                                  return Text(
+                                    '${totalGotAmt.toInt().abs()}',
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.green),
+                                  );
                                 }
-                                if (!snapshot.hasData ||
-                                    !snapshot.data!.exists) {
-                                  return const Text('');
-                                }
-
-                                // Extract total got amount from document snapshot
-                                var data = snapshot.data!.data() as Map<String,
-                                    dynamic>?; // Ensure data is cast to the correct type
-                                if (data != null) {
-                                  var totalGotAmount = data['totalGotAmount']
-                                      as num?; // Access the value using the [] operator
-                                  if (totalGotAmount != null) {
-                                    return Text(
-                                      '${totalGotAmount.toInt()}',
-                                      style: const TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.green),
-                                    );
-                                  }
-                                }
-
-                                return const Text(
-                                    'Total got amount not available.');
                               },
                             ),
                           ],
@@ -462,7 +579,21 @@ class _ViewReportState extends State<ViewReport> {
                         return Text('Error: ${snapshot.error}');
                       }
                       if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                        return const Text('No customers found.');
+                        return Column(
+                          children: [
+                            const SizedBox(
+                              height: 100,
+                            ),
+                            Container(
+                                height: 50,
+                                child: Image.network(
+                                    'https://cdn-icons-png.flaticon.com/512/8480/8480293.png')),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            const Text('No Transaction found.'),
+                          ],
+                        );
                       }
 
                       // Extract customer documents from snapshot
@@ -475,191 +606,268 @@ class _ViewReportState extends State<ViewReport> {
                         itemBuilder: (context, index) {
                           var customerId = customerDocs[index].id;
 
-                          return StreamBuilder<QuerySnapshot>(
-                            stream: FirebaseFirestore.instance
-                                .collection('users')
-                                .doc(widget.userId)
-                                .collection('Customers')
-                                .doc(customerId)
-                                .collection('youGave')
-                                .orderBy('timestamp', descending: true)
-                                .snapshots(),
-                            builder: (BuildContext context,
-                                AsyncSnapshot<QuerySnapshot> youGaveSnapshot) {
-                              if (youGaveSnapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return const CircularProgressIndicator();
-                              }
-                              if (youGaveSnapshot.hasError) {
-                                return Text('Error: ${youGaveSnapshot.error}');
-                              }
-                              if (!youGaveSnapshot.hasData ||
-                                  youGaveSnapshot.data!.docs.isEmpty) {
-                                return const SizedBox(); // Return an empty SizedBox if no data is found for this customer
-                              }
+                          return Column(
+                            children: [
+                              StreamBuilder<QuerySnapshot>(
+                                stream: FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(widget.userId)
+                                    .collection('Customers')
+                                    .doc(customerId)
+                                    .collection('youGave')
+                                    .orderBy('timestamp', descending: true)
+                                    .snapshots(),
+                                builder: (BuildContext context,
+                                    AsyncSnapshot<QuerySnapshot>
+                                        youGaveSnapshot) {
+                                  if (youGaveSnapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const CircularProgressIndicator();
+                                  }
+                                  if (youGaveSnapshot.hasError) {
+                                    return Text(
+                                        'Error: ${youGaveSnapshot.error}');
+                                  }
+                                  if (!youGaveSnapshot.hasData ||
+                                      youGaveSnapshot.data!.docs.isEmpty) {
+                                    return const SizedBox(); // Return an empty SizedBox if no data is found for this customer
+                                  }
 
-                              // Extract "youGave" documents for this customer from snapshot
-                              var youGaveDocs = youGaveSnapshot.data!.docs;
-                              var totalGaveAmountRef = FirebaseFirestore
-                                  .instance
-                                  .collection('users')
-                                  .doc(widget.userId)
-                                  .collection(
-                                      'totalGaveAmount') // Create a subcollection for statistics if it doesn't exist
-                                  .doc(
-                                      'totalGaveAmount'); // Assume 'totalGaveAmount' is the document ID
+                                  // Extract "youGave" documents for this customer from snapshot
+                                  var youGaveDocs = youGaveSnapshot.data!.docs;
+                                  var totalGaveAmountRef = FirebaseFirestore
+                                      .instance
+                                      .collection('users')
+                                      .doc(widget.userId);
 
-// Use a transaction or set operation to insert/update the total gave amount
-                              FirebaseFirestore.instance
-                                  .runTransaction((transaction) async {
-                                // Get the existing document snapshot
-                                var docSnapshot =
-                                    await transaction.get(totalGaveAmountRef);
+                                  // Use a transaction or set operation to insert/update the total gave amount
+                                  FirebaseFirestore.instance
+                                      .runTransaction((transaction) async {
+                                    // Get the existing document snapshot
+                                    var docSnapshot = await transaction
+                                        .get(totalGaveAmountRef);
 
-                                // Calculate the total gave amount
-                                double totalGaveAmount = 0;
-                                youGaveDocs.forEach((transactionDoc) {
-                                  var transaction = transactionDoc.data()
-                                      as Map<String, dynamic>;
-                                  totalGaveAmount += transaction['amount'] ?? 0;
-                                });
+                                    // Calculate the total gave amount
+                                    double totalGaveAmount = 0;
+                                    youGaveDocs.forEach((transactionDoc) {
+                                      var transaction = transactionDoc.data()
+                                          as Map<String, dynamic>;
+                                      totalGaveAmount +=
+                                          transaction['amount'] ?? 0;
+                                    });
 
-                                // Update the document with the new total gave amount
-                                if (docSnapshot.exists) {
-                                  // If the document already exists, update it
-                                  transaction.update(totalGaveAmountRef,
-                                      {'totalGaveAmount': totalGaveAmount});
-                                } else {
-                                  // If the document doesn't exist, create it
-                                  transaction.set(totalGaveAmountRef,
-                                      {'totalGaveAmount': totalGaveAmount});
-                                }
-                              }).then((_) {
-                                print(
-                                    'Total gave amount inserted/updated successfully.');
-                              }).catchError((error) {
-                                print(
-                                    'Error inserting/updating total gave amount: $error');
-                              });
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  ListView.builder(
-                                    controller: ScrollController(),
-                                    shrinkWrap: true,
-                                    itemCount: youGaveDocs.length,
-                                    itemBuilder: (context, index) {
-                                      var transaction = youGaveDocs[index]
-                                          .data() as Map<String, dynamic>;
-                                      var docId = youGaveDocs[index].id;
+                                    // Update the document with the new total gave amount
+                                    if (docSnapshot.exists) {
+                                      // If the document already exists, update it
+                                      transaction.update(totalGaveAmountRef,
+                                          {'totalGaveAmount': totalGaveAmount});
+                                    } else {
+                                      // If the document doesn't exist, create it
+                                      transaction.set(totalGaveAmountRef,
+                                          {'totalGaveAmount': totalGaveAmount});
+                                    }
+                                  }).then((_) {
+                                    print(
+                                        'Total gave amount inserted/updated successfully.');
+                                  }).catchError((error) {
+                                    print(
+                                        'Error inserting/updating total gave amount: $error');
+                                  });
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      ListView.builder(
+                                        controller: ScrollController(),
+                                        shrinkWrap: true,
+                                        itemCount: youGaveDocs.length,
+                                        itemBuilder: (context, index) {
+                                          var transaction = youGaveDocs[index]
+                                              .data() as Map<String, dynamic>;
+                                          var docId = youGaveDocs[index].id;
 
-                                      String formattedTimestamp =
-                                          DateFormat('dd MMM yy • hh:mm a')
-                                              .format(transaction['timestamp']
-                                                  .toDate());
-                                      return Column(
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Container(
-                                              child: Padding(
+                                          String formattedTimestamp =
+                                              DateFormat('dd MMM yy • hh:mm a')
+                                                  .format(
+                                                      transaction['timestamp']
+                                                          .toDate());
+                                          return Column(
+                                            children: [
+                                              Padding(
                                                 padding:
                                                     const EdgeInsets.all(8.0),
-                                                child: InkWell(
-                                                  onTap: () {
-                                                    // Handle onTap action
-                                                  },
-                                                  child: Container(
-                                                    width: double.infinity,
-                                                    decoration: BoxDecoration(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              10),
-                                                      boxShadow: [
-                                                        BoxShadow(
-                                                          color: Colors.grey
-                                                              .withOpacity(0.2),
-                                                          spreadRadius: 4,
-                                                          blurRadius: 3,
-                                                          offset: const Offset(
-                                                              0,
-                                                              1), // changes position of shadow
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    child: Row(
-                                                      children: [
-                                                        Expanded(
-                                                          flex: 2,
-                                                          child: Container(
-                                                            height: 60,
-                                                            color: Colors.white,
-                                                            child: Column(
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .center,
-                                                              children: [
-                                                                const SizedBox(
-                                                                    height: 12),
-                                                                Text(
-                                                                  formattedTimestamp,
-                                                                  style: const TextStyle(
-                                                                      color: Colors
-                                                                          .grey,
-                                                                      fontSize:
-                                                                          11),
-                                                                ),
-                                                                Padding(
-                                                                  padding: const EdgeInsets
-                                                                      .symmetric(
-                                                                      horizontal:
-                                                                          2.0),
-                                                                  child: Text(
-                                                                    "${transaction['balance'] ?? ""}",
-                                                                    style: const TextStyle(
-                                                                        color: Colors
-                                                                            .grey,
-                                                                        fontSize:
-                                                                            12),
-                                                                  ),
-                                                                ),
-                                                              ],
+                                                child: Container(
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            8.0),
+                                                    child: InkWell(
+                                                      onTap: () {
+                                                        // Handle onTap action
+                                                      },
+                                                      child: Container(
+                                                        width: double.infinity,
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(10),
+                                                          boxShadow: [
+                                                            BoxShadow(
+                                                              color: Colors.grey
+                                                                  .withOpacity(
+                                                                      0.2),
+                                                              spreadRadius: 4,
+                                                              blurRadius: 3,
+                                                              offset: const Offset(
+                                                                  0,
+                                                                  1), // changes position of shadow
                                                             ),
-                                                          ),
+                                                          ],
                                                         ),
-                                                        Expanded(
-                                                          flex: 1,
-                                                          child: Container(
-                                                            height: 60,
-                                                            color: Colors
-                                                                .transparent,
-                                                            child: Center(
-                                                              child: Text(
-                                                                "₹ ${transaction['amount'].toInt()}",
-                                                                style: const TextStyle(
-                                                                    color: Colors
-                                                                        .red,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold),
+                                                        child: Row(
+                                                          children: [
+                                                            Expanded(
+                                                              flex: 2,
+                                                              child: Container(
+                                                                height: 60,
+                                                                color: Colors
+                                                                    .white,
+                                                                child: Column(
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .center,
+                                                                  children: [
+                                                                    const SizedBox(
+                                                                        height:
+                                                                            12),
+                                                                    Text(
+                                                                      formattedTimestamp,
+                                                                      style: const TextStyle(
+                                                                          color: Colors
+                                                                              .grey,
+                                                                          fontSize:
+                                                                              11),
+                                                                    ),
+                                                                    Padding(
+                                                                      padding: const EdgeInsets
+                                                                          .symmetric(
+                                                                          horizontal:
+                                                                              2.0),
+                                                                      child:
+                                                                          Text(
+                                                                        "${transaction['balance'] ?? ""}",
+                                                                        style: const TextStyle(
+                                                                            color:
+                                                                                Colors.grey,
+                                                                            fontSize: 12),
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
                                                               ),
                                                             ),
-                                                          ),
+                                                            Expanded(
+                                                              flex: 1,
+                                                              child: Container(
+                                                                height: 60,
+                                                                color: Colors
+                                                                    .transparent,
+                                                                child: Center(
+                                                                  child: Text(
+                                                                    "₹ ${transaction['amount'].toInt()}",
+                                                                    style: const TextStyle(
+                                                                        color: Colors
+                                                                            .red,
+                                                                        fontWeight:
+                                                                            FontWeight.bold),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
                                                         ),
-                                                      ],
+                                                      ),
                                                     ),
                                                   ),
                                                 ),
                                               ),
-                                            ),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  ),
-                                ],
-                              );
-                            },
+                                            ],
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+                              StreamBuilder<QuerySnapshot>(
+                                stream: FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(widget.userId)
+                                    .collection('Customers')
+                                    .doc(customerId)
+                                    .collection('youGot')
+                                    .orderBy('timestamp', descending: true)
+                                    .snapshots(),
+                                builder: (BuildContext context,
+                                    AsyncSnapshot<QuerySnapshot>
+                                        youGotSnapshot) {
+                                  if (youGotSnapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const CircularProgressIndicator();
+                                  }
+                                  if (youGotSnapshot.hasError) {
+                                    return Text(
+                                        'Error: ${youGotSnapshot.error}');
+                                  }
+                                  if (!youGotSnapshot.hasData ||
+                                      youGotSnapshot.data!.docs.isEmpty) {
+                                    return const SizedBox(); // Return an empty SizedBox if no data is found for this customer
+                                  }
+
+                                  // Extract "youGave" documents for this customer from snapshot
+                                  var youGotDocs = youGotSnapshot.data!.docs;
+                                  var totalGotAmountReff = FirebaseFirestore
+                                      .instance
+                                      .collection('users')
+                                      .doc(widget.userId);
+
+                                  FirebaseFirestore.instance
+                                      .runTransaction((transaction) async {
+                                    // Get the existing document snapshot
+                                    var docSnapshot = await transaction
+                                        .get(totalGotAmountReff);
+
+                                    // Calculate the total gave amount
+                                    double totalGotAmount = 0;
+                                    youGotDocs.forEach((transactionDoc) {
+                                      var transaction = transactionDoc.data()
+                                          as Map<String, dynamic>;
+                                      totalGotAmount +=
+                                          transaction['amount'] ?? 0;
+                                    });
+
+                                    // Update the document with the new total gave amount
+                                    if (docSnapshot.exists) {
+                                      // If the document already exists, update it
+                                      transaction.update(totalGotAmountReff,
+                                          {'totalGotAmount': totalGotAmount});
+                                    } else {
+                                      // If the document doesn't exist, create it
+                                      transaction.set(totalGotAmountReff,
+                                          {'totalGotAmount': totalGotAmount});
+                                    }
+                                  }).then((_) {
+                                    print(
+                                        'Total got amount inserted/updated successfully.');
+                                  }).catchError((error) {
+                                    print(
+                                        'Error inserting/updating total got amount: $error');
+                                  });
+                                  return SizedBox();
+                                },
+                              ),
+                            ],
                           );
                         },
                       );
@@ -684,7 +892,21 @@ class _ViewReportState extends State<ViewReport> {
                         return Text('Error: ${snapshot.error}');
                       }
                       if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                        return const Text('No customers found.');
+                        return Column(
+                          children: [
+                            const SizedBox(
+                              height: 100,
+                            ),
+                            Container(
+                                height: 50,
+                                child: Image.network(
+                                    'https://cdn-icons-png.flaticon.com/512/8480/8480293.png')),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            const Text('No Transaction found.'),
+                          ],
+                        );
                       }
 
                       // Extract customer documents from snapshot
@@ -724,12 +946,8 @@ class _ViewReportState extends State<ViewReport> {
                               var totalGotAmountReff = FirebaseFirestore
                                   .instance
                                   .collection('users')
-                                  .doc(widget.userId)
-                                  .collection(
-                                      'totalGotAmount') // Create a subcollection for statistics if it doesn't exist
-                                  .doc(
-                                      'totalGotAmount'); // Assume 'totalGaveAmount' is the document ID
-                              // Return a widget to display the transactions for this customer
+                                  .doc(widget.userId);
+
                               FirebaseFirestore.instance
                                   .runTransaction((transaction) async {
                                 // Get the existing document snapshot
@@ -858,7 +1076,7 @@ class _ViewReportState extends State<ViewReport> {
                                                                 "₹ ${transaction['amount'].toInt()}",
                                                                 style: const TextStyle(
                                                                     color: Colors
-                                                                        .red,
+                                                                        .green,
                                                                     fontWeight:
                                                                         FontWeight
                                                                             .bold),
@@ -922,5 +1140,59 @@ class _ViewReportState extends State<ViewReport> {
         _selectedEndDate = picked;
       });
     }
+  }
+
+  Future<double> getTotalGaveAmount() async {
+    double totalGaveAmt = 0;
+    var customersSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.userId)
+        .collection('Customers')
+        .get();
+
+    for (var customerDoc in customersSnapshot.docs) {
+      var customerId = customerDoc.id;
+      var youGaveDocsSnap = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.userId)
+          .collection('Customers')
+          .doc(customerId)
+          .collection('youGave')
+          .get();
+
+      for (var youGaveDoc in youGaveDocsSnap.docs) {
+        var transaction = youGaveDoc.data() as Map<String, dynamic>;
+        totalGaveAmt += (transaction['amount'] ?? 0);
+      }
+    }
+
+    return totalGaveAmt;
+  }
+
+  Future<double> getTotalGotAmount() async {
+    double totalGotAmt = 0;
+    var customersSnapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.userId)
+        .collection('Customers')
+        .get();
+
+    for (var customerDoc in customersSnapshot.docs) {
+      var customerId = customerDoc.id;
+      var youGotDocsSnap = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.userId)
+          .collection('Customers')
+          .doc(customerId)
+          .collection('youGot')
+          .get();
+
+      for (var youGotDoc in youGotDocsSnap.docs) {
+        var transaction = youGotDoc.data() as Map<String, dynamic>;
+        totalGotAmt += (transaction['amount'] ?? 0);
+      }
+    }
+
+    return totalGotAmt;
   }
 }

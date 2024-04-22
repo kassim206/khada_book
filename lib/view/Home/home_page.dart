@@ -321,7 +321,7 @@ class _HomePageState extends State<HomePage> {
                                                       color: Colors.green),
                                                 )
                                               : Text(
-                                                  '₹ ${totalNetAmount.toStringAsFixed(0)}',
+                                                  '₹ ${totalNetAmount.abs().toStringAsFixed(0)}',
                                                   style: const TextStyle(
                                                       fontWeight:
                                                           FontWeight.bold,
@@ -387,14 +387,14 @@ class _HomePageState extends State<HomePage> {
                                                   style: const TextStyle(
                                                       fontWeight:
                                                           FontWeight.bold,
-                                                      color: Colors.green),
+                                                      color: Colors.red),
                                                 )
                                               : Text(
                                                   '₹ ${totalNetAmount.toStringAsFixed(0)}',
                                                   style: const TextStyle(
                                                       fontWeight:
                                                           FontWeight.bold,
-                                                      color: Colors.red),
+                                                      color: Colors.green),
                                                 );
                                     },
                                   ),
@@ -677,7 +677,7 @@ class _HomePageState extends State<HomePage> {
                                           print('${netAmount}');
                                           return netAmount == 0
                                               ? const Text("0")
-                                              : netAmount < 0
+                                              : netAmount > 0
                                                   ? Text(
                                                       '${netAmount < 0 ? '' : ''} ₹ ${netAmount.abs().toStringAsFixed(0)}',
                                                       style: const TextStyle(
@@ -686,7 +686,7 @@ class _HomePageState extends State<HomePage> {
                                                           color: Colors.green),
                                                     )
                                                   : Text(
-                                                      '₹ ${netAmount.toStringAsFixed(0)}',
+                                                      '₹ ${netAmount.abs().toStringAsFixed(0)}',
                                                       style: const TextStyle(
                                                           fontWeight:
                                                               FontWeight.bold,

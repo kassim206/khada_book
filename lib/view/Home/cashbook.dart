@@ -513,14 +513,14 @@ class _CashbookState extends State<Cashbook> {
                     padding: const EdgeInsets.only(left: 10),
                     height: 45,
                     width: 140,
-                    child: Column(
+                    child: const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // const Text("13 MAR", style: TextStyle(fontSize: 10)),
-                        totalentries == null
-                            ? const Text("")
-                            : Text("$totalentries Entries",
-                                style: const TextStyle(fontSize: 10)),
+                        // totalentries == null
+                        //     ? const Text("")
+                        //     : Text("$totalentries Entries",
+                        //         style: const TextStyle(fontSize: 10)),
                       ],
                     ),
                   ),
@@ -532,61 +532,12 @@ class _CashbookState extends State<Cashbook> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          const Text("OUT", style: TextStyle(fontSize: 12)),
+                          const Text("IN", style: TextStyle(fontSize: 12)),
                           // Text("₹ 0",
                           //     style: TextStyle(
                           //         fontSize: 12,
                           //         fontWeight: FontWeight.bold,
                           //         color: Colors.red)),
-                          StreamBuilder<DocumentSnapshot>(
-                            stream: FirebaseFirestore.instance
-                                .collection('users')
-                                .doc(widget.userId)
-                                .snapshots(),
-                            builder: (BuildContext context,
-                                AsyncSnapshot<DocumentSnapshot> snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return const Center(child: Text(""));
-                              }
-                              if (snapshot.hasError) {
-                                return Text('Error: ${snapshot.error}');
-                              }
-
-                              // Get the user document data
-                              var userData = snapshot.data!.data()
-                                  as Map<String, dynamic>?;
-                              // Check if the document exists and contains the totalAmountGiven
-                              if (userData != null &&
-                                  userData.containsKey('totalAmountReceived')) {
-                                double totalAmountReceived =
-                                    userData['totalAmountReceived'];
-
-                                // Now you can use totalAmountReceived variable wherever needed
-                                // For example, display it in a Text widget
-                                return Text('₹ ${totalAmountReceived.toInt()}',
-                                    style: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.red));
-                              }
-
-                              // Return a default widget if totalAmountGiven is not available
-                              return const Text('');
-                            },
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.only(right: 10),
-                      height: 40,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          const Text("IN", style: TextStyle(fontSize: 12)),
                           StreamBuilder<DocumentSnapshot>(
                             stream: FirebaseFirestore.instance
                                 .collection('users')
@@ -624,6 +575,56 @@ class _CashbookState extends State<Cashbook> {
                               return const Text('');
                             },
                           )
+                        ],
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.only(right: 10),
+                      height: 40,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          const Text("OUT", style: TextStyle(fontSize: 12)),
+                            StreamBuilder<DocumentSnapshot>(
+                            stream: FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(widget.userId)
+                                .snapshots(),
+                            builder: (BuildContext context,
+                                AsyncSnapshot<DocumentSnapshot> snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Center(child: Text(""));
+                              }
+                              if (snapshot.hasError) {
+                                return Text('Error: ${snapshot.error}');
+                              }
+
+                              // Get the user document data
+                              var userData = snapshot.data!.data()
+                                  as Map<String, dynamic>?;
+                              // Check if the document exists and contains the totalAmountGiven
+                              if (userData != null &&
+                                  userData.containsKey('totalAmountReceived')) {
+                                double totalAmountReceived =
+                                    userData['totalAmountReceived'];
+
+                                // Now you can use totalAmountReceived variable wherever needed
+                                // For example, display it in a Text widget
+                                return Text('₹ ${totalAmountReceived.toInt()}',
+                                    style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.red));
+                              }
+
+                              // Return a default widget if totalAmountGiven is not available
+                              return const Text('');
+                            },
+                          )
+                        
                         ],
                       ),
                     ),

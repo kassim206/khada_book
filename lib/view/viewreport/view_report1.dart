@@ -52,7 +52,7 @@ class _ViewReportsState extends State<ViewReports> {
       //   ),
       // ),
       body: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
+          physics: const NeverScrollableScrollPhysics(),
           child: SizedBox(
               height: MediaQuery.of(context).size.height,
               width: MediaQuery.of(context).size.width,
@@ -328,11 +328,29 @@ class _ViewReportsState extends State<ViewReports> {
                             double totalGaveAmt = snapshot.data?[0] ?? 0;
                             double totalGotAmt = snapshot.data?[1] ?? 0;
                             double difference = totalGaveAmt - totalGotAmt;
-                            return Text(
-                              '  ${difference.toInt().abs()}',
-                              style: const TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.bold),
-                            );
+
+                            // return Text(
+                            //   '  ₹ ${difference.toInt().abs()}',
+                            //   style: const TextStyle(
+                            //       fontSize: 16, fontWeight: FontWeight.bold),
+                            // );
+                            return difference == 0
+                                ? const Text("0")
+                                : difference > 0
+                                    ? Text(
+                                        '  ₹ ${difference.toInt().abs()}',
+                                        style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.red),
+                                      )
+                                    : Text(
+                                        '  ₹ ${difference.toInt().abs()}',
+                                        style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.green),
+                                      );
                           }
                         },
                       ),
@@ -435,7 +453,7 @@ class _ViewReportsState extends State<ViewReports> {
                                   } else {
                                     double totalGaveAmt = snapshot.data ?? 0;
                                     return Text(
-                                      '${totalGaveAmt.toInt().abs()}',
+                                      '₹ ${totalGaveAmt.toInt().abs()}',
                                       style: const TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
@@ -518,7 +536,7 @@ class _ViewReportsState extends State<ViewReports> {
                                   } else {
                                     double totalGotAmt = snapshot.data ?? 0;
                                     return Text(
-                                      '${totalGotAmt.toInt().abs()}',
+                                      ' ₹ ${totalGotAmt.toInt().abs()}',
                                       style: const TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
@@ -534,320 +552,201 @@ class _ViewReportsState extends State<ViewReports> {
                     ],
                   ),
                 ),
-                StreamBuilder<QuerySnapshot>(
-                    stream: FirebaseFirestore.instance
-                        .collection('users') // Reference the main collection
-                        .doc(
-                            widget.userId) // Reference a specific user document
-                        .collection(
-                            'Customers') // Reference the "Customers" subcollection
-                        .snapshots(),
-                    builder: (BuildContext context,
-                        AsyncSnapshot<QuerySnapshot> snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(
-                          child: CircularProgressIndicator(),
-                        );
-                      }
-                      if (snapshot.hasError) {
-                        return Text('Error: ${snapshot.error}');
-                      }
-                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                        return Column(
-                          children: [
-                            const SizedBox(
-                              height: 100,
-                            ),
-                            Container(
-                                height: 50,
-                                child: Image.network(
-                                    'https://cdn-icons-png.flaticon.com/512/8480/8480293.png')),
-                            const SizedBox(
-                              height: 20,
-                            ),
-                            const Text('No Transaction found.'),
-                          ],
-                        );
-                      }
+                StreamBuilder(
+                  stream: FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(widget.userId)
+                      .collection('Customers')
+                      .snapshots(),
+                  builder: (context,
+                      AsyncSnapshot<QuerySnapshot> customersSnapshot) {
+                    if (!customersSnapshot.hasData) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
 
-                      // Extract customer documents from snapshot
-                      var customerDocs = snapshot.data!.docs;
-                      double totalGaveAmt = 0;
+                    List<DocumentSnapshot> customers =
+                        customersSnapshot.data!.docs;
 
-                      // Returning ListView.builder to display transactions for all customers
-                      return Expanded(
-                        child: ListView.builder(shrinkWrap: true,controller: ScrollController(),
-                          itemCount: customerDocs.length,
-                          itemBuilder: (context, index) {
-                            var customerId = customerDocs[index].id;
-                        
-                            return Column(
-                              children: [
-                                StreamBuilder<QuerySnapshot>(
-                                  stream: FirebaseFirestore.instance
-                                      .collection('users')
-                                      .doc(widget.userId)
-                                      .collection('Customers')
-                                      .doc(customerId)
-                                      .collection('youGave')
-                                      .orderBy('timestamp', descending: true)
-                                      .snapshots(),
-                                  builder: (BuildContext context,
-                                      AsyncSnapshot<QuerySnapshot>
-                                          youGaveSnapshot) {
-                                    if (youGaveSnapshot.connectionState ==
-                                        ConnectionState.waiting) {
-                                      return const CircularProgressIndicator();
-                                    }
-                                    if (youGaveSnapshot.hasError) {
-                                      return Text(
-                                          'Error: ${youGaveSnapshot.error}');
-                                    }
-                                    if (!youGaveSnapshot.hasData ||
-                                        youGaveSnapshot.data!.docs.isEmpty) {
-                                      return const SizedBox(); // Return an empty SizedBox if no data is found for this customer
-                                    }
-                        
-                                    // Extract "youGave" documents for this customer from snapshot
-                                    var youGaveDocs = youGaveSnapshot.data!.docs;
-                                    var totalGaveAmountRef = FirebaseFirestore
-                                        .instance
-                                        .collection('users')
-                                        .doc(widget.userId);
-                        
-                                    // Use a transaction or set operation to insert/update the total gave amount
-                                    FirebaseFirestore.instance
-                                        .runTransaction((transaction) async {
-                                      // Get the existing document snapshot
-                                      var docSnapshot = await transaction
-                                          .get(totalGaveAmountRef);
-                        
-                                      // Calculate the total gave amount
-                                      double totalGaveAmount = 0;
-                                      youGaveDocs.forEach((transactionDoc) {
-                                        var transaction = transactionDoc.data()
-                                            as Map<String, dynamic>;
-                                        totalGaveAmount +=
-                                            transaction['amount'] ?? 0;
-                                      });
-                        
-                                      // Update the document with the new total gave amount
-                                      if (docSnapshot.exists) {
-                                        // If the document already exists, update it
-                                        transaction.update(totalGaveAmountRef,
-                                            {'totalGaveAmount': totalGaveAmount});
-                                      } else {
-                                        // If the document doesn't exist, create it
-                                        transaction.set(totalGaveAmountRef,
-                                            {'totalGaveAmount': totalGaveAmount});
-                                      }
-                                    }).then((_) {
-                                      print(
-                                          'Total gave amount inserted/updated successfully.');
-                                    }).catchError((error) {
-                                      print(
-                                          'Error inserting/updating total gave amount: $error');
-                                    });
-                                    return Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        ListView.builder(
-                                          controller: ScrollController(),
-                                          shrinkWrap: true,
-                                          itemCount: youGaveDocs.length,
-                                          itemBuilder: (context, index) {
-                                            var transaction = youGaveDocs[index]
-                                                .data() as Map<String, dynamic>;
-                                            var docId = youGaveDocs[index].id;
-                        
-                                            String formattedTimestamp =
-                                                DateFormat('dd MMM yy • hh:mm a')
-                                                    .format(
-                                                        transaction['timestamp']
-                                                            .toDate());
-                                            return Column(
-                                              children: [
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: Container(
-                                                    child: Padding(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              8.0),
-                                                      child: InkWell(
-                                                        onTap: () {
-                                                          // Handle onTap action
-                                                        },
+                    return FutureBuilder(
+                      future: _getAllTransactions(customers),
+                      builder: (context,
+                          AsyncSnapshot<List<DocumentSnapshot>> snapshot) {
+                        if (!snapshot.hasData) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+
+                        List<DocumentSnapshot> allTransactions = snapshot.data!;
+
+                        return Expanded(
+                          child: ListView.builder(
+                            itemCount: allTransactions.length,
+                            itemBuilder: (context, index) {
+                              var transaction = allTransactions[index];
+                              var amount = transaction['amount'];
+
+                              var color =
+                                  transaction.reference.path.contains('youGave')
+                                      ? Colors.red
+                                      : Colors.green;
+                              String formattedDateTime = '';
+                              if (allTransactions[index] is DocumentSnapshot) {
+                                DocumentSnapshot document =
+                                    allTransactions[index] as DocumentSnapshot;
+                                if (document['timestamp'] != null) {
+                                  var timestamp = document['timestamp'];
+                                  var date = timestamp.toDate();
+                                  formattedDateTime =
+                                      DateFormat('dd MMM yy • hh:mm a')
+                                          .format(date);
+                                }
+                              }
+
+                              return Column(
+                                children: [
+                                  Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Container(
+                                          // Container styling for youGave items
+                                          child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: InkWell(
+                                                onTap: () {},
+                                                child: Container(
+                                                  width: double.infinity,
+                                                  decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            10),
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        color: Colors.grey
+                                                            .withOpacity(0.2),
+                                                        spreadRadius: 4,
+                                                        blurRadius: 3,
+                                                        offset: const Offset(0,
+                                                            1), // changes position of shadow
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  child: Row(
+                                                    children: [
+                                                      Expanded(
+                                                        flex: 2,
                                                         child: Container(
-                                                          width: double.infinity,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(10),
-                                                            boxShadow: [
-                                                              BoxShadow(
-                                                                color: Colors.grey
-                                                                    .withOpacity(
-                                                                        0.2),
-                                                                spreadRadius: 4,
-                                                                blurRadius: 3,
-                                                                offset: const Offset(
-                                                                    0,
-                                                                    1), // changes position of shadow
-                                                              ),
-                                                            ],
-                                                          ),
-                                                          child: Row(
-                                                            children: [
-                                                              Expanded(
-                                                                flex: 2,
-                                                                child: Container(
-                                                                  height: 60,
-                                                                  color: Colors
-                                                                      .white,
-                                                                  child: Column(
-                                                                    mainAxisAlignment:
-                                                                        MainAxisAlignment
-                                                                            .center,
-                                                                    children: [
-                                                                      const SizedBox(
-                                                                          height:
-                                                                              12),
-                                                                      Text(
-                                                                        formattedTimestamp,
-                                                                        style: const TextStyle(
-                                                                            color: Colors
-                                                                                .grey,
-                                                                            fontSize:
-                                                                                11),
-                                                                      ),
-                                                                      Padding(
-                                                                        padding: const EdgeInsets
-                                                                            .symmetric(
-                                                                            horizontal:
-                                                                                2.0),
-                                                                        child:
-                                                                            Text(
-                                                                          "${transaction['balance'] ?? ""}",
-                                                                          style: const TextStyle(
-                                                                              color:
-                                                                                  Colors.grey,
-                                                                              fontSize: 12),
-                                                                        ),
-                                                                      ),
-                                                                    ],
-                                                                  ),
+                                                          height: 50,
+                                                          color: Colors.white,
+                                                          child: Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .only(
+                                                                    left: 5.0),
+                                                            child: Column(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .center,
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+                                                              children: [
+                                                                Text(
+                                                                  allTransactions[
+                                                                          index]
+                                                                      [
+                                                                      'custNames'],
+                                                                  style: const TextStyle(
+                                                                      color: Colors
+                                                                          .grey,
+                                                                      fontSize:
+                                                                          11),
                                                                 ),
-                                                              ),
-                                                              Expanded(
-                                                                flex: 1,
-                                                                child: Container(
-                                                                  height: 60,
-                                                                  color: Colors
-                                                                      .transparent,
-                                                                  child: Center(
-                                                                    child: Text(
-                                                                      "₹ ${transaction['amount'].toInt()}",
-                                                                      style: const TextStyle(
-                                                                          color: Colors
-                                                                              .red,
-                                                                          fontWeight:
-                                                                              FontWeight.bold),
-                                                                    ),
-                                                                  ),
+                                                                Text(
+                                                                  formattedDateTime,
+                                                                  style: const TextStyle(
+                                                                      color: Colors
+                                                                          .grey,
+                                                                      fontSize:
+                                                                          11),
                                                                 ),
-                                                              ),
-                                                            ],
+                                                              ],
+                                                            ),
                                                           ),
                                                         ),
                                                       ),
-                                                    ),
+                                                      Expanded(
+                                                        child: Container(
+                                                            height: 50,
+                                                            color: Colors
+                                                                .red.shade50,
+                                                            child: transaction
+                                                                    .reference
+                                                                    .path
+                                                                    .contains(
+                                                                        'youGave')
+                                                                ? Column(
+                                                                    mainAxisAlignment:
+                                                                        MainAxisAlignment
+                                                                            .center,
+                                                                    crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .end,
+                                                                    children: [
+                                                                      Text(
+                                                                        ' ₹ ${amount.toStringAsFixed(0)} ',
+                                                                        style: TextStyle(
+                                                                            color:
+                                                                                color),
+                                                                      )
+                                                                    ],
+                                                                  )
+                                                                : const Text(
+                                                                    "")),
+                                                      ),
+                                                      Expanded(
+                                                        child: Container(
+                                                            color: Colors.white,
+                                                            height: 50,
+                                                            child: transaction
+                                                                    .reference
+                                                                    .path
+                                                                    .contains(
+                                                                        'youGot')
+                                                                ? Column(
+                                                                    mainAxisAlignment:
+                                                                        MainAxisAlignment
+                                                                            .center,
+                                                                    crossAxisAlignment:
+                                                                        CrossAxisAlignment
+                                                                            .end,
+                                                                    children: [
+                                                                      Text(
+                                                                        ' ₹ ${amount.toStringAsFixed(0)} ',
+                                                                        style: TextStyle(
+                                                                            color:
+                                                                                color),
+                                                                      )
+                                                                    ],
+                                                                  )
+                                                                : const Text(
+                                                                    "")),
+                                                      ),
+                                                    ],
                                                   ),
                                                 ),
-                                              ],
-                                            );
-                                          },
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                ),
-                                StreamBuilder<QuerySnapshot>(
-                                  stream: FirebaseFirestore.instance
-                                      .collection('users')
-                                      .doc(widget.userId)
-                                      .collection('Customers')
-                                      .doc(customerId)
-                                      .collection('youGot')
-                                      .orderBy('timestamp', descending: true)
-                                      .snapshots(),
-                                  builder: (BuildContext context,
-                                      AsyncSnapshot<QuerySnapshot>
-                                          youGotSnapshot) {
-                                    if (youGotSnapshot.connectionState ==
-                                        ConnectionState.waiting) {
-                                      return const CircularProgressIndicator();
-                                    }
-                                    if (youGotSnapshot.hasError) {
-                                      return Text(
-                                          'Error: ${youGotSnapshot.error}');
-                                    }
-                                    if (!youGotSnapshot.hasData ||
-                                        youGotSnapshot.data!.docs.isEmpty) {
-                                      return const SizedBox(); // Return an empty SizedBox if no data is found for this customer
-                                    }
-                        
-                                    // Extract "youGave" documents for this customer from snapshot
-                                    var youGotDocs = youGotSnapshot.data!.docs;
-                                    var totalGotAmountReff = FirebaseFirestore
-                                        .instance
-                                        .collection('users')
-                                        .doc(widget.userId);
-                        
-                                    FirebaseFirestore.instance
-                                        .runTransaction((transaction) async {
-                                      // Get the existing document snapshot
-                                      var docSnapshot = await transaction
-                                          .get(totalGotAmountReff);
-                        
-                                      // Calculate the total gave amount
-                                      double totalGotAmount = 0;
-                                      youGotDocs.forEach((transactionDoc) {
-                                        var transaction = transactionDoc.data()
-                                            as Map<String, dynamic>;
-                                        totalGotAmount +=
-                                            transaction['amount'] ?? 0;
-                                      });
-                        
-                                      // Update the document with the new total gave amount
-                                      if (docSnapshot.exists) {
-                                        // If the document already exists, update it
-                                        transaction.update(totalGotAmountReff,
-                                            {'totalGotAmount': totalGotAmount});
-                                      } else {
-                                        // If the document doesn't exist, create it
-                                        transaction.set(totalGotAmountReff,
-                                            {'totalGotAmount': totalGotAmount});
-                                      }
-                                    }).then((_) {
-                                      print(
-                                          'Total got amount inserted/updated successfully.');
-                                    }).catchError((error) {
-                                      print(
-                                          'Error inserting/updating total got amount: $error');
-                                    });
-                                    return const SizedBox();
-                                  },
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                      );
-                    })
+                                              )))),
+                                ],
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
               ]))),
     );
   }
@@ -934,5 +833,48 @@ class _ViewReportsState extends State<ViewReports> {
     }
 
     return totalGotAmt;
+  }
+
+  String _formatAmount(dynamic amount) {
+    double parsedAmount = double.parse(amount.toString());
+    String formattedAmount = parsedAmount.toString();
+
+    // Check if amount has decimal values
+    if (parsedAmount % 1 == 0) {
+      // If amount is an integer, don't display decimal part
+      formattedAmount = parsedAmount.toInt().toString();
+    }
+
+    return formattedAmount;
+  }
+
+  Future<List<DocumentSnapshot>> _getAllTransactions(
+      List<DocumentSnapshot> customers) async {
+    List<DocumentSnapshot> allTransactions = [];
+
+    for (var customer in customers) {
+      var youGotSnapshot = await customer.reference
+          .collection('youGot')
+          .orderBy('timestamp', descending: true)
+          .get();
+
+      var youGaveSnapshot = await customer.reference
+          .collection('youGave')
+          .orderBy('timestamp', descending: true)
+          .get();
+
+      allTransactions.addAll(youGotSnapshot.docs);
+      allTransactions.addAll(youGaveSnapshot.docs);
+    }
+
+    allTransactions.sort((a, b) {
+      if (a['timestamp'] == null || b['timestamp'] == null) {
+        return a['timestamp'] == null ? 1 : -1;
+      }
+      return (b['timestamp'] as Timestamp)
+          .compareTo(a['timestamp'] as Timestamp);
+    });
+
+    return allTransactions;
   }
 }

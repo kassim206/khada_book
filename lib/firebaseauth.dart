@@ -41,15 +41,15 @@ class Authentication {
   Future<void> loginUser(
       BuildContext context, String email, String password) async {
     try {
-            // Show attractive loading indicator while waiting for authentication and data retrieval
+      // Show attractive loading indicator while waiting for authentication and data retrieval
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) {
           return Center(
             child: SpinKitThreeBounce(
-              color: Colors.blue.shade900,  // Choose your desired color
-              size: 50.0,  // Adjust the size of the spinner
+              color: Colors.blue.shade900, // Choose your desired color
+              size: 50.0, // Adjust the size of the spinner
             ),
           );
         },
@@ -63,7 +63,6 @@ class Authentication {
       // Save user login state using shared preferences
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setBool('isLoggedIn', true);
-      prefs.setString('userUid', userCredential.user!.uid);
 
       // Retrieve additional user data from Firestore using a query
       QuerySnapshot userSnapshot = await FirebaseFirestore.instance
@@ -77,12 +76,13 @@ class Authentication {
       if (userSnapshot.docs.isNotEmpty) {
         // Get the document ID of the first document in the result
         String documentId = userSnapshot.docs[0].id;
-         // Dismiss loading indicator
+        prefs.setString('userUid', documentId); // Save document ID
+        // Dismiss loading indicator
         Navigator.of(context, rootNavigator: true).pop();
         print('${documentId}===]]');
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             backgroundColor: Colors.green,
             content: Text('Login successful!',
                 style: TextStyle(color: Colors.white)),
@@ -97,7 +97,7 @@ class Authentication {
         );
       }
     } catch (e) {
-        // Dismiss loading indicator
+      // Dismiss loading indicator
       Navigator.of(context, rootNavigator: true).pop();
       String errorMessage = 'Login Failed. Please try again.';
 
@@ -120,7 +120,8 @@ class Authentication {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: Colors.black,
-          content: Text(errorMessage, style: TextStyle(color: Colors.white)),
+          content:
+              Text(errorMessage, style: const TextStyle(color: Colors.white)),
         ),
       );
     }
@@ -143,20 +144,21 @@ class Authentication {
       // Save user login state using shared preferences
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setBool('isLoggedIn', true);
-      prefs.setString('userUid', userCredential.user!.uid);
+      prefs.setString('userUid', 'tdNdksdev7eTR87MuNla');
 
       // Navigate to home screen on successful login
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
             builder: (context) => BasicBottomNavBar(
-                  uid: 'bhJcZF5f8NPTRd3Qzw32',
+                  uid: 'tdNdksdev7eTR87MuNla',
                 )),
       );
     } catch (e) {
       // Handle login failure
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Google Sign-In Failed. Please try again.')),
+        const SnackBar(
+            content: Text('Google Sign-In Failed. Please try again.')),
       );
     }
   }
@@ -173,7 +175,7 @@ class Authentication {
     // Navigate to login screen
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => LoginPage()),
+      MaterialPageRoute(builder: (context) => const LoginPage()),
     );
   }
 }

@@ -34,51 +34,57 @@ class _TransactionPayState extends State<TransactionPay> {
     updateTitleText();
   }
 
- void addToGaveCollection(String amount) {
-  // Get a reference to the Firestore instance
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
+  void addToGaveCollection(String amount) {
+    // Get a reference to the Firestore instance
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  // Reference to the main collection for users
-  CollectionReference users = firestore.collection('users');
+    // Reference to the main collection for users
+    CollectionReference users = firestore.collection('users');
 
-  // Reference to the subcollection for customers under a specific user
-  CollectionReference customers = users.doc('${widget.userId}').collection('Customers');
+    // Reference to the subcollection for customers under a specific user
+    CollectionReference customers =
+        users.doc('${widget.userId}').collection('Customers');
 
-  // Add the amount to the customer's "youGave" subcollection
-  customers.doc('${widget.docid}').collection('youGave').add({
-    'amount': double.parse(amount), // Convert amount to double
-    'timestamp': FieldValue.serverTimestamp(), // Use Firestore server timestamp
-  }).then((value) {
-    // Transaction added successfully
-    print('Transaction added successfully');
-  }).catchError((error) {
-    // Error handling
-    print('Failed to add transaction: $error');
-  });
-}
+    // Add the amount to the customer's "youGave" subcollection
+    customers.doc('${widget.docid}').collection('youGave').add({
+      'amount': double.parse(amount), // Convert amount to double
+      'timestamp':
+          FieldValue.serverTimestamp(), // Use Firestore server timestamp
+      'custNames': widget.name,
+    }).then((value) {
+      // Transaction added successfully
+      print('Transaction added successfully');
+    }).catchError((error) {
+      // Error handling
+      print('Failed to add transaction: $error');
+    });
+  }
 
- void addToGotCollection(String amount) {
-  // Get a reference to the Firestore instance
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
+  void addToGotCollection(String amount) {
+    // Get a reference to the Firestore instance
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  // Reference to the main collection for users
-  CollectionReference users = firestore.collection('users');
+    // Reference to the main collection for users
+    CollectionReference users = firestore.collection('users');
 
-  // Reference to the subcollection for customers under a specific user
-  CollectionReference customers = users.doc('${widget.userId}').collection('Customers');
+    // Reference to the subcollection for customers under a specific user
+    CollectionReference customers =
+        users.doc('${widget.userId}').collection('Customers');
 
-  // Add the amount to the customer's "youGave" subcollection
-  customers.doc('${widget.docid}').collection('youGot').add({
-    'amount': double.parse(amount), // Convert amount to double
-    'timestamp': FieldValue.serverTimestamp(), // Use Firestore server timestamp
-  }).then((value) {
-    // Transaction added successfully
-    print('Transaction added successfully');
-  }).catchError((error) {
-    // Error handling
-    print('Failed to add transaction: $error');
-  });
-}
+    // Add the amount to the customer's "youGave" subcollection
+    customers.doc('${widget.docid}').collection('youGot').add({
+      'amount': double.parse(amount), // Convert amount to double
+      'timestamp':
+          FieldValue.serverTimestamp(), // Use Firestore server timestamp
+      'custNames': widget.name,
+    }).then((value) {
+      // Transaction added successfully
+      print('Transaction added successfully');
+    }).catchError((error) {
+      // Error handling
+      print('Failed to add transaction: $error');
+    });
+  }
   // void addToGotCollection(String amount) {
   //   // Get a reference to the Firestore instance
   //   FirebaseFirestore firestore = FirebaseFirestore.instance;

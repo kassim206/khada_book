@@ -8,6 +8,8 @@ import 'package:contacts_service/contacts_service.dart';
 import 'package:intl/intl.dart';
 import 'package:khada_book/view/Home/cashbook.dart';
 import 'package:khada_book/view/Home/editbuisinessname.dart';
+import 'package:khada_book/view/Home/transaction3.dart';
+import 'package:khada_book/view/viewreport/view_report1.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:khada_book/view/Home/transaction2.dart';
 // import 'package:timeago/timeago.dart' as timeago;
@@ -284,7 +286,7 @@ class _HomePageState extends State<HomePage> {
                                       }
 
                                       // Calculate total net amount for all customers
-                                      int totalNetAmount = 0;
+                                      double totalNetAmount = 0;
 
                                       // Iterate through each document in the snapshot
                                       for (DocumentSnapshot customerSnapshot
@@ -296,7 +298,7 @@ class _HomePageState extends State<HomePage> {
                                         // Check if the document contains the netAmount
                                         if (customerData
                                             .containsKey('netAmount')) {
-                                          int netAmount =
+                                          double netAmount =
                                               customerData['netAmount'];
                                           print('${netAmount}');
 
@@ -310,16 +312,16 @@ class _HomePageState extends State<HomePage> {
                                       // Display the total net amount
                                       return totalNetAmount == 0
                                           ? const Text("₹ 0")
-                                          : totalNetAmount < 0
+                                          : totalNetAmount > 0
                                               ? Text(
-                                                  '₹ ${totalNetAmount.abs()}',
+                                                  '₹ ${totalNetAmount.abs().toStringAsFixed(0).toString()}',
                                                   style: const TextStyle(
                                                       fontWeight:
                                                           FontWeight.bold,
                                                       color: Colors.green),
                                                 )
                                               : Text(
-                                                  '₹ ${totalNetAmount}',
+                                                  '₹ ${totalNetAmount.toStringAsFixed(0)}',
                                                   style: const TextStyle(
                                                       fontWeight:
                                                           FontWeight.bold,
@@ -353,7 +355,7 @@ class _HomePageState extends State<HomePage> {
                                       }
 
                                       // Calculate total net amount for all customers
-                                      int totalNetAmount = 0;
+                                      double totalNetAmount = 0;
 
                                       // Iterate through each document in the snapshot
                                       for (DocumentSnapshot customerSnapshot
@@ -365,7 +367,7 @@ class _HomePageState extends State<HomePage> {
                                         // Check if the document contains the netAmount
                                         if (customerData
                                             .containsKey('netAmount')) {
-                                          int netAmount =
+                                          double netAmount =
                                               customerData['netAmount'];
                                           print('${netAmount}');
 
@@ -381,14 +383,14 @@ class _HomePageState extends State<HomePage> {
                                           ? const Text("₹ 0")
                                           : totalNetAmount < 0
                                               ? Text(
-                                                  '₹ ${totalNetAmount.abs()}',
+                                                  '₹ ${totalNetAmount.abs().toStringAsFixed(0)}',
                                                   style: const TextStyle(
                                                       fontWeight:
                                                           FontWeight.bold,
                                                       color: Colors.green),
                                                 )
                                               : Text(
-                                                  '₹ ${totalNetAmount}',
+                                                  '₹ ${totalNetAmount.toStringAsFixed(0)}',
                                                   style: const TextStyle(
                                                       fontWeight:
                                                           FontWeight.bold,
@@ -407,7 +409,7 @@ class _HomePageState extends State<HomePage> {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => ViewReport(
+                                    builder: (context) => ViewReports(
                                           userId: widget.uid,
                                         )));
                           },
@@ -573,9 +575,25 @@ class _HomePageState extends State<HomePage> {
                                       });
                                     },
                                     onTap: () {
+                                      // Navigator.of(context).push(
+                                      //   MaterialPageRoute(
+                                      //     builder: (context) => Transactions(
+                                      //       userId: widget.uid,
+                                      //       customerId: customerId,
+                                      //       name:
+                                      //           selectedContact?['userName'] ??
+                                      //               "" ??
+                                      //               "",
+                                      //       number: selectedContact?[
+                                      //               'contactNumber'] ??
+                                      //           "" ??
+                                      //           "", // Casting to Contact type
+                                      //     ),
+                                      //   ),
+                                      // );
                                       Navigator.of(context).push(
                                         MaterialPageRoute(
-                                          builder: (context) => Transactions(
+                                          builder: (context) => CombinedList(
                                             userId: widget.uid,
                                             customerId: customerId,
                                             name:
@@ -654,21 +672,21 @@ class _HomePageState extends State<HomePage> {
                                         if (customerData != null &&
                                             customerData
                                                 .containsKey('netAmount')) {
-                                          int netAmount =
+                                          double netAmount =
                                               customerData['netAmount'];
                                           print('${netAmount}');
                                           return netAmount == 0
                                               ? const Text("0")
                                               : netAmount < 0
                                                   ? Text(
-                                                      '${netAmount < 0 ? '' : ''} ₹ ${netAmount.abs()}',
+                                                      '${netAmount < 0 ? '' : ''} ₹ ${netAmount.abs().toStringAsFixed(0)}',
                                                       style: const TextStyle(
                                                           fontWeight:
                                                               FontWeight.bold,
                                                           color: Colors.green),
                                                     )
                                                   : Text(
-                                                      '₹ ${netAmount}',
+                                                      '₹ ${netAmount.toStringAsFixed(0)}',
                                                       style: const TextStyle(
                                                           fontWeight:
                                                               FontWeight.bold,

@@ -314,7 +314,7 @@ class _ViewReportState extends State<ViewReport> {
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
                             ConnectionState.waiting) {
-                          return Center(
+                          return const Center(
                             child: SizedBox(
                               width: 10,
                               height: 10,
@@ -331,7 +331,7 @@ class _ViewReportState extends State<ViewReport> {
                           double difference = totalGaveAmt - totalGotAmt;
                           return Text(
                             '  ${difference.toInt().abs()}',
-                            style: TextStyle(
+                            style: const TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.bold),
                           );
                         }
@@ -429,14 +429,14 @@ class _ViewReportState extends State<ViewReport> {
                                   return Container(
                                       height: 10,
                                       width: 10,
-                                      child: CircularProgressIndicator());
+                                      child: const CircularProgressIndicator());
                                 } else if (snapshot.hasError) {
                                   return Text('Error: ${snapshot.error}');
                                 } else {
                                   double totalGaveAmt = snapshot.data ?? 0;
                                   return Text(
                                     '${totalGaveAmt.toInt().abs()}',
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.red),
@@ -511,14 +511,14 @@ class _ViewReportState extends State<ViewReport> {
                                   return Container(
                                       height: 10,
                                       width: 10,
-                                      child: CircularProgressIndicator());
+                                      child: const CircularProgressIndicator());
                                 } else if (snapshot.hasError) {
                                   return Text('Error: ${snapshot.error}');
                                 } else {
                                   double totalGotAmt = snapshot.data ?? 0;
                                   return Text(
                                     '${totalGotAmt.toInt().abs()}',
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.green),
@@ -864,7 +864,7 @@ class _ViewReportState extends State<ViewReport> {
                                     print(
                                         'Error inserting/updating total got amount: $error');
                                   });
-                                  return SizedBox();
+                                  return const SizedBox();
                                 },
                               ),
                             ],

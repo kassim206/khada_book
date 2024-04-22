@@ -43,7 +43,7 @@ class _EditEntryState extends State<EditEntry> {
     _amtController.text = widget.amount;
     _detailsController.text = widget.details;
     widget.date;
-    print(widget.date);
+    print('${widget.date}****-');
   }
 
   @override
@@ -220,7 +220,8 @@ class _EditEntryState extends State<EditEntry> {
                                               .format(_selectedDate!)
                                           : widget.date == null
                                               ? "Select Date"
-                                              : formatCustomDate(widget.date))),
+                                              : '${formatCustomDate(widget.date)}')
+                                              ),
                                   Icon(
                                     Icons.arrow_drop_down,
                                     color: widget.color == Colors.red
